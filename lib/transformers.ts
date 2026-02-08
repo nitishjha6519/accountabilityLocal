@@ -142,3 +142,51 @@ export function transformGoalsData(
     transformGoalData(goal, clientMaps?.[goal.clientId]),
   );
 }
+
+// Transform API goals to AvailableGoal format for assistant view
+export interface AvailableGoal {
+  id: string;
+  title: string;
+  clientName: string;
+  clientInitials: string;
+  avatarColor: string;
+  verified: boolean;
+  isNew?: boolean;
+  duration: string;
+  reward: number;
+  rewardPeriod: string;
+  description: string;
+  tags: string[];
+  category: "fitness" | "productivity" | "career";
+}
+
+export function transformToAvailableGoal(apiGoal: APIGoal): AvailableGoal {
+  // Generate initials from clientId (use first 2 letters)
+  const initials = apiGoal.clientId
+    .substring(0, 2)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+
+  // Generate placeholder client name
+  const clientName = `Client ${apiGoal.clientId.substring(0, 4)}`;
+
+  return {
+    id: apiGoal._id,
+    title: apiGoal.title,
+    clientName,
+    clientInitials: initials || "CL",
+    avatarColor: generateColorFromString(apiGoal._id),
+    verified: false, // Will default to false unless explicitly marked
+    duration: getDurationDisplay(apiGoal.startDate, apiGoal.endDate),
+    reward: apiGoal.rewardAmount || 0,
+    rewardPeriod: apiGoal.rewardPeriod || "per week",
+    description: apiGoal.description || "",
+    tags: apiGoal.tags || [],
+    category:
+      (apiGoal.category as "fitness" | "productivity" | "career") || "fitness",
+  };
+}
+
+export function transformAvailableGoals(apiGoals: APIGoal[]): AvailableGoal[] {
+  return apiGoals.map(transformToAvailableGoal);
+}
