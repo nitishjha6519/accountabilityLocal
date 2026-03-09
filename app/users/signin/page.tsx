@@ -4,7 +4,7 @@ import React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   Eye,
@@ -17,9 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { login } from "@/lib/auth";
 
-export default function LoginPage() {
+export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,13 +31,7 @@ export default function LoginPage() {
     setError("");
     try {
       await login(email, password);
-      // Check for redirect param and pendingGoal
-      const redirect = searchParams.get("redirect");
-      if (redirect && sessionStorage.getItem("pendingGoal")) {
-        router.push(redirect);
-      } else {
-        router.push("/dashboard?role=client&tab=goals");
-      }
+      router.push("/dashboard?role=client&tab=goals");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid email or password",
@@ -137,10 +130,10 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Logging in...
+                Signing in...
               </>
             ) : (
-              "Log In"
+              "Sign In"
             )}
           </Button>
         </form>
@@ -192,11 +185,7 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
-            href={
-              searchParams.get("redirect")
-                ? `/signup?redirect=${searchParams.get("redirect")}`
-                : "/signup"
-            }
+            href="/signup"
             className="font-medium text-primary hover:underline"
           >
             Sign up

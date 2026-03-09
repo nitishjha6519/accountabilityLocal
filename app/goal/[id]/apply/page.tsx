@@ -1,25 +1,35 @@
-"use client"
+"use client";
 
-import React from "react"
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter, useParams } from "next/navigation"
-import { ChevronLeft, Dumbbell, Calendar, Briefcase, Languages, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { apiPost } from "@/lib/api"
-import { getUser } from "@/lib/auth"
+import React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import {
+  ChevronLeft,
+  Dumbbell,
+  Calendar,
+  Briefcase,
+  Languages,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { apiPost } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 
-const goalsData: Record<string, {
-  title: string
-  ownerName: string
-  ownerInitials: string
-  avatarColor: string
-  reward: number
-  rewardFrequency: string
-  category: string
-  categoryIcon: "fitness" | "career" | "language" | "business"
-  checkInType: string
-}> = {
+const goalsData: Record<
+  string,
+  {
+    title: string;
+    ownerName: string;
+    ownerInitials: string;
+    avatarColor: string;
+    reward: number;
+    rewardFrequency: string;
+    category: string;
+    categoryIcon: "fitness" | "career" | "language" | "business";
+    checkInType: string;
+  }
+> = {
   "1": {
     title: "Run a Marathon in 6 Months",
     ownerName: "Jane Doe",
@@ -75,49 +85,51 @@ const goalsData: Record<string, {
     categoryIcon: "business",
     checkInType: "2x Daily Check-in",
   },
-}
+};
 
 const iconMap = {
   fitness: Dumbbell,
   career: Briefcase,
   language: Languages,
   business: Briefcase,
-}
+};
 
 export default function ApplyPage() {
-  const params = useParams()
-  const id = params.id as string
-  const router = useRouter()
-  const [pitch, setPitch] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState("")
-  const maxChars = 500
+  const params = useParams();
+  const id = params.id as string;
+  const router = useRouter();
+  const [pitch, setPitch] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const maxChars = 500;
 
-  const goal = goalsData[id] || goalsData["1"]
-  const CategoryIcon = iconMap[goal.categoryIcon]
+  const goal = goalsData[id] || goalsData["1"];
+  const CategoryIcon = iconMap[goal.categoryIcon];
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const user = getUser()
+    e.preventDefault();
+    const user = getUser();
     if (!user) {
-      setError("Please log in to apply")
-      return
+      setError("Please log in to apply");
+      return;
     }
-    setIsSubmitting(true)
-    setError("")
+    setIsSubmitting(true);
+    setError("");
     try {
       await apiPost("/applications", {
         goalId: id,
         assistantId: user.id,
         pitch,
-      })
-      router.push("/dashboard?role=assistant&tab=applications&filter=pending")
+      });
+      router.push("/dashboard?role=assistant&tab=applications&filter=pending");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit application")
+      setError(
+        err instanceof Error ? err.message : "Failed to submit application",
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,7 +138,9 @@ export default function ApplyPage() {
           <Link href={`/goal/${id}`} className="text-foreground">
             <ChevronLeft className="h-6 w-6" />
           </Link>
-          <h1 className="text-lg font-semibold text-foreground">Apply to Goal</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            Apply to Goal
+          </h1>
           <div className="w-6" />
         </div>
       </header>
@@ -143,7 +157,11 @@ export default function ApplyPage() {
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-foreground">{goal.title}</h3>
               <p className="mt-0.5 text-sm text-primary">
-                ${goal.reward}{goal.rewardFrequency} <span className="text-muted-foreground">• {goal.ownerName}</span>
+                ${goal.reward}
+                {goal.rewardFrequency}{" "}
+                <span className="text-muted-foreground">
+                  • {goal.ownerName}
+                </span>
               </p>
             </div>
           </div>
@@ -161,7 +179,9 @@ export default function ApplyPage() {
 
         <form onSubmit={handleSubmit} className="mt-6">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Your Pitch</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              Your Pitch
+            </h3>
             <div className="mt-3 rounded-xl border border-border bg-card">
               <textarea
                 value={pitch}
@@ -171,11 +191,14 @@ export default function ApplyPage() {
                 className="w-full resize-none bg-transparent px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
               <div className="flex justify-end border-t border-border px-4 py-2">
-                <span className="text-sm text-muted-foreground">{pitch.length}/{maxChars}</span>
+                <span className="text-sm text-muted-foreground">
+                  {pitch.length}/{maxChars}
+                </span>
               </div>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              Mention your relevant experience and how you plan to keep the client accountable to their specific goal.
+              Mention your relevant experience and how you plan to keep the
+              client accountable to their specific goal.
             </p>
           </div>
 
@@ -198,7 +221,7 @@ export default function ApplyPage() {
                 </>
               ) : (
                 <>
-                  Submit Application
+                  Submit Applicationn
                   <span className="ml-1">{">"}</span>
                 </>
               )}
@@ -214,5 +237,5 @@ export default function ApplyPage() {
         </form>
       </main>
     </div>
-  )
+  );
 }

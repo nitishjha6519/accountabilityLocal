@@ -1,100 +1,222 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
-import { X, CheckCircle2, XCircle, Star, Calendar, Save, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { apiPost } from "@/lib/api"
-import { getUser } from "@/lib/auth"
+import { useState, useEffect } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  X,
+  CheckCircle2,
+  XCircle,
+  Star,
+  Calendar,
+  Save,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { fetchApplicationById, submitFeedbackAsClient, submitFeedbackAsAssistant, FeedbackPayload } from "@/lib/api";
+import { getUser } from "@/lib/auth";
 
-const trialData: Record<string, { goalTitle: string; assistantName: string; startDate: string; endDate: string }> = {
-  "1": { goalTitle: "Learn French Basics", assistantName: "Maria", startDate: "2026-01-05", endDate: "2026-03-05" },
-  "2": { goalTitle: "Launch MVP", assistantName: "James", startDate: "2026-02-10", endDate: "2026-04-10" },
-  "3": { goalTitle: "Marathon Prep", assistantName: "Sarah", startDate: "2025-11-01", endDate: "2025-12-01" },
-}
-
-const activityNames: Record<string, string[]> = {
-  "1": ["Vocabulary Session", "Grammar Practice", "Listening Exercise", "Conversational Practice", "Writing Assignment", "Pronunciation Drill", "Reading Comprehension"],
-  "2": ["Sprint Planning", "Feature Development", "Code Review", "User Testing", "Bug Fixes", "Design Review", "Deployment Prep"],
-  "3": ["Morning 5K Run", "Interval Training", "Consistent Morning Workout", "Long Distance Practice", "Recovery Stretching", "Tempo Run", "Hill Repeats"],
+interface TrialData {
+  goalTitle: string;
+  partnerName: string;
+  startDate: string;
+  endDate: string;
+  partnerId: string;
 }
 
 function getDayName(dateStr: string) {
-  const date = new Date(dateStr + "T12:00:00")
-  return date.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { weekday: "long" }).toUpperCase();
 }
 
 function getFormattedDate(dateStr: string) {
-  const date = new Date(dateStr + "T12:00:00")
-  const day = date.getDate()
-  const month = date.toLocaleDateString("en-US", { month: "long" }).toUpperCase()
-  return `${day} ${month}`
+  const date = new Date(dateStr);
+  const day = date.getDate();
+  const month = date
+    .toLocaleDateString("en-US", { month: "long" })
+    .toUpperCase();
+  return `${day} ${month}`;
 }
 
 export default function CheckinPage() {
-  const params = useParams()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = params.id as string
-  const dateStr = searchParams.get("date") || new Date().toISOString().split("T")[0]
+  const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = params.id as string;
+  const dateStr =
+    searchParams.get("date") || new Date().toISOString().split("T")[0];
+  const roleParam = searchParams.get("role") as "client" | "assistant" | null;
 
-  const trial = trialData[id] || trialData["1"]
-  const activities = activityNames[id] || activityNames["1"]
+  const [trial, setTrial] = useState<TrialData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [userIsClient, setUserIsClient] = useState<boolean>(false);
 
-  // Pick activity based on date - consistent for the same date
-  const dateParts = dateStr.split("-")
-  const dayNum = Number.parseInt(dateParts[2])
-  const monthNum = Number.parseInt(dateParts[1])
-  const activityIndex = (dayNum + monthNum) % activities.length
-  const activityName = activities[activityIndex]
+  useEffect(() => {
+    async function loadData() {
+      const user = getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      setCurrentUserId(user.id);
+
+      try {
+        const app = await fetchApplicationById(id);
+
+        // Use role from query param if available, otherwise derive from application
+        const isClient = roleParam
+          ? roleParam === "client"
+          : user.id ===
+            (typeof app.clientId === "object" ? app.clientId._id : app.clientId);
+        setUserIsClient(isClient);
+        const goal = typeof app.goalId === "object" ? app.goalId : null;
+
+        let partnerName: string;
+        let partnerId: string;
+
+        if (isClient) {
+          const assistant =
+            typeof app.assistantId === "object" ? app.assistantId : null;
+          partnerName = assistant?.fullName || "Assistant";
+          partnerId =
+            assistant?._id ||
+            (typeof app.assistantId === "string" ? app.assistantId : "");
+        } else {
+          const client = typeof app.clientId === "object" ? app.clientId : null;
+          partnerName = client?.fullName || "Client";
+          partnerId =
+            client?._id ||
+            (typeof app.clientId === "string" ? app.clientId : "");
+        }
+
+        setTrial({
+          goalTitle: goal?.title || "Goal",
+          partnerName,
+          startDate:
+            goal?.startDate?.split("T")[0] || app.createdAt.split("T")[0],
+          endDate: goal?.endDate?.split("T")[0] || app.createdAt.split("T")[0],
+          partnerId,
+        });
+      } catch (err) {
+        console.error("Failed to load trial data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [id, router]);
+
+  // Generate an activity name based on the date
+  const dateParts = dateStr.split("-");
+  const dayNum = Number.parseInt(dateParts[2]);
+  const monthNum = Number.parseInt(dateParts[1]);
+  const activities = [
+    "Session Check-in",
+    "Progress Review",
+    "Daily Practice",
+    "Accountability Check",
+    "Goal Review",
+  ];
+  const activityIndex = (dayNum + monthNum) % activities.length;
+  const activityName = activities[activityIndex];
 
   // Check if date is within trial range
-  const isInRange = dateStr >= trial.startDate && dateStr <= trial.endDate
+  const isInRange = trial
+    ? dateStr >= trial.startDate && dateStr <= trial.endDate
+    : false;
 
-  const [myAttendance, setMyAttendance] = useState<"present" | "absent" | null>(null)
-  const [partnerAttendance, setPartnerAttendance] = useState<"present" | "absent" | null>(null)
-  const [rating, setRating] = useState(0)
-  const [hoveredStar, setHoveredStar] = useState(0)
-  const [feedback, setFeedback] = useState("")
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState("")
-  const maxFeedback = 200
+  const [myAttendance, setMyAttendance] = useState<"present" | "absent" | null>(
+    null,
+  );
+  const [partnerAttendance, setPartnerAttendance] = useState<
+    "present" | "absent" | null
+  >(null);
+  const [rating, setRating] = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const maxFeedback = 200;
 
   const handleSave = async () => {
-    const user = getUser()
-    if (!user) {
-      setError("Please log in to save check-in")
-      return
+    if (!currentUserId || !trial) {
+      setError("Please log in to save check-in");
+      return;
     }
-    setIsSaving(true)
-    setError("")
+    setIsSaving(true);
+    setError("");
     try {
-      await apiPost("/feedback", {
+      // Determine clientPresent/assistantPresent based on user role
+      // If user is client: myAttendance = client, partnerAttendance = assistant
+      // If user is assistant: myAttendance = assistant, partnerAttendance = client
+      const clientPresent = userIsClient
+        ? myAttendance === "present"
+        : partnerAttendance === "present";
+      const assistantPresent = userIsClient
+        ? partnerAttendance === "present"
+        : myAttendance === "present";
+
+      const feedbackData: FeedbackPayload = {
         applicationId: id,
-        providedBy: user.id,
-        receivedBy: user.id,
+        providedBy: currentUserId,
+        receivedBy: trial.partnerId,
         sessionDate: dateStr,
-        clientPresent: myAttendance === "present",
-        assistantPresent: partnerAttendance === "present",
-        stars: rating || undefined,
-        comment: feedback || undefined,
-      })
-      router.back()
+        clientPresent,
+        assistantPresent,
+        stars: rating || 0,
+        comment: feedback || "",
+      };
+      
+      // Use appropriate endpoint based on role
+      if (userIsClient) {
+        await submitFeedbackAsClient(feedbackData);
+      } else {
+        await submitFeedbackAsAssistant(feedbackData);
+      }
+      router.back();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save check-in")
+      setError(err instanceof Error ? err.message : "Failed to save check-in");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!trial) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4">
+        <p className="text-destructive">Failed to load trial data</p>
+        <button
+          onClick={() => router.back()}
+          className="text-primary underline"
+        >
+          Go Back
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
-        <button onClick={() => router.back()} className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground">
+        <button
+          onClick={() => router.back()}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-foreground"
+        >
           <X className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-semibold text-foreground">Daily Check-in</h1>
+        <h1 className="text-lg font-semibold text-foreground">
+          Daily Check-in
+        </h1>
         <button className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-muted-foreground">
           <Calendar className="h-5 w-5" />
         </button>
@@ -106,13 +228,18 @@ export default function CheckinPage() {
           <p className="text-sm font-semibold tracking-wide text-primary">
             {getDayName(dateStr)}, {getFormattedDate(dateStr)}
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-foreground">{activityName}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{trial.goalTitle} {'•'} w/ {trial.assistantName}</p>
+          <h2 className="mt-2 text-2xl font-bold text-foreground">
+            {activityName}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {trial.goalTitle} {"•"} w/ {trial.partnerName}
+          </p>
         </div>
 
         {!isInRange && (
           <div className="mt-6 rounded-xl bg-destructive/10 p-4 text-center text-sm text-destructive">
-            This date is outside the trial period ({trial.startDate} to {trial.endDate})
+            This date is outside the trial period ({trial.startDate} to{" "}
+            {trial.endDate})
           </div>
         )}
 
@@ -120,7 +247,9 @@ export default function CheckinPage() {
           <>
             {/* Your Attendance */}
             <div className="mt-8">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Your Attendance</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Your Attendance
+              </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setMyAttendance("present")}
@@ -150,7 +279,7 @@ export default function CheckinPage() {
             {/* Partner Attendance */}
             <div className="mt-6">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Partner Attendance ({trial.assistantName.toUpperCase()})
+                Partner Attendance ({trial.partnerName.toUpperCase()})
               </p>
               <div className="flex gap-3">
                 <button
@@ -184,7 +313,9 @@ export default function CheckinPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {"Partner's Performance"}
                 </p>
-                <span className="text-lg font-bold text-primary">{rating > 0 ? rating.toFixed(1) : ""}</span>
+                <span className="text-lg font-bold text-primary">
+                  {rating > 0 ? rating.toFixed(1) : ""}
+                </span>
               </div>
               <div className="flex justify-center rounded-xl bg-secondary/50 py-4">
                 <div className="flex gap-2">
@@ -211,13 +342,15 @@ export default function CheckinPage() {
 
             {/* Daily Feedback */}
             <div className="mt-6">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Daily Feedback</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Daily Feedback
+              </p>
               <div className="relative">
                 <textarea
                   value={feedback}
                   onChange={(e) => {
                     if (e.target.value.length <= maxFeedback) {
-                      setFeedback(e.target.value)
+                      setFeedback(e.target.value);
                     }
                   }}
                   placeholder="Encourage your partner or leave notes on today's session..."
@@ -261,5 +394,5 @@ export default function CheckinPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

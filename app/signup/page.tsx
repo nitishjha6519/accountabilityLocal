@@ -1,59 +1,75 @@
-"use client"
+"use client";
 
-import React from "react"
+import React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ChevronLeft, Eye, EyeOff, User, Mail, Lock, X, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { apiPost } from "@/lib/api"
-import { saveAuth } from "@/lib/auth"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ChevronLeft,
+  Eye,
+  EyeOff,
+  User,
+  Mail,
+  Lock,
+  X,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { apiPost } from "@/lib/api";
+import { saveAuth } from "@/lib/auth";
 
 function getPasswordStrength(password: string): number {
-  let strength = 0
-  if (password.length >= 6) strength++
-  if (password.length >= 10) strength++
-  if (/[A-Z]/.test(password)) strength++
-  if (/[0-9]/.test(password)) strength++
-  if (/[^A-Za-z0-9]/.test(password)) strength++
-  return Math.min(strength, 4)
+  let strength = 0;
+  if (password.length >= 6) strength++;
+  if (password.length >= 10) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+  return Math.min(strength, 4);
 }
 
 export default function SignupPage() {
-  const router = useRouter()
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const passwordStrength = getPasswordStrength(password)
+  const passwordStrength = getPasswordStrength(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      return
+      setError("Passwords do not match");
+      return;
     }
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
     try {
       const data = await apiPost<{
-        access_token: string
-        user: { id: string; email: string; fullName: string; initials: string }
-      }>("/auth/register", { fullName, email, password })
-      saveAuth(data)
-      router.push("/dashboard?role=client&tab=goals")
+        access_token: string;
+        user: { id: string; email: string; fullName: string; initials: string };
+      }>("/auth/register", { fullName, email, password });
+      saveAuth(data);
+      // Check for redirect param and pendingGoal
+      const redirect = searchParams.get("redirect");
+      if (redirect && sessionStorage.getItem("pendingGoal")) {
+        router.push(redirect);
+      } else {
+        router.push("/dashboard?role=client&tab=goals");
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account")
+      setError(err instanceof Error ? err.message : "Failed to create account");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="relative min-h-screen bg-background px-4 py-6">
@@ -73,13 +89,20 @@ export default function SignupPage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Join the Community</h1>
-          <p className="mt-1 text-muted-foreground">Find your partner. Reach your goals.</p>
+          <h1 className="text-2xl font-bold text-foreground">
+            Join the Community
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            Find your partner. Reach your goals.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-foreground">
+            <label
+              htmlFor="fullName"
+              className="mb-2 block text-sm font-medium text-foreground"
+            >
               Full Name
             </label>
             <div className="relative">
@@ -96,7 +119,10 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-medium text-foreground"
+            >
               Email Address
             </label>
             <div className="relative">
@@ -113,7 +139,10 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-foreground">
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-medium text-foreground"
+            >
               Password
             </label>
             <div className="relative">
@@ -130,7 +159,11 @@ export default function SignupPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
             {password && (
@@ -148,7 +181,10 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-foreground">
+            <label
+              htmlFor="confirmPassword"
+              className="mb-2 block text-sm font-medium text-foreground"
+            >
               Confirm Password
             </label>
             <div className="relative">
@@ -165,7 +201,11 @@ export default function SignupPage() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
@@ -178,7 +218,9 @@ export default function SignupPage() {
 
           <Button
             type="submit"
-            disabled={isLoading || !fullName || !email || !password || !confirmPassword}
+            disabled={
+              isLoading || !fullName || !email || !password || !confirmPassword
+            }
             className="w-full rounded-xl bg-primary py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {isLoading ? (
@@ -206,7 +248,9 @@ export default function SignupPage() {
 
         <div className="my-6 flex items-center gap-4">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-sm text-muted-foreground">Or continue with</span>
+          <span className="text-sm text-muted-foreground">
+            Or continue with
+          </span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
@@ -248,11 +292,18 @@ export default function SignupPage() {
 
         <p className="mt-8 text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link
+            href={
+              searchParams.get("redirect")
+                ? `/login?redirect=${searchParams.get("redirect")}`
+                : "/login"
+            }
+            className="font-medium text-primary hover:underline"
+          >
             Log In
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

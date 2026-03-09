@@ -45,10 +45,10 @@ export default function ReviewGoalPage() {
   const handlePost = async () => {
     if (!goalData) return;
     const user = getUser();
-    // if (!user) {
-    //   setError("Please log in to post a goal")
-    //   return
-    // }
+    if (!user) {
+      router.push("/login?redirect=/post-goal/review");
+      return;
+    }
     setIsPosting(true);
     setError("");
     try {
@@ -63,8 +63,7 @@ export default function ReviewGoalPage() {
         pledgeAmount: goalData.hasPledge
           ? Number.parseFloat(goalData.pledgeAmount)
           : 0,
-        // clientId: user.id,
-        clientId: "65a8f4c2b1234567890abcde",
+        clientId: user.id,
         status: "posted",
       });
       sessionStorage.removeItem("pendingGoal");

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface AvailableGoal {
@@ -38,6 +39,7 @@ export function GoalsTabAssistant({
   filter,
   onFilterChange,
 }: GoalsTabAssistantProps) {
+  const router = useRouter();
   console.log("goalsgoals", goals);
   const filteredGoals = goals.filter(
     (goal) => filter === "all" || goal.category === filter,
@@ -197,14 +199,15 @@ export function GoalsTabAssistant({
                   <span className="text-reward">${goal.reward} Reward</span>
                 </div>
               </div>
-              <Link href={`/goal/${goal.id}`}>
-                <Button
-                  size="sm"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Apply
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  router.push(`/goal/${goal.id}`);
+                }}
+              >
+                Apply
+              </Button>
             </div>
           </div>
         ))}

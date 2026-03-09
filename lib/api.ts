@@ -1,8 +1,7 @@
 import { getToken } from "@/lib/auth";
-import { CURRENT_CLIENT_ID } from "@/lib/transformers";
+import { getCurrentClientId } from "@/lib/transformers";
 
-// const BASE_URL = "https://accountability-backend-six.vercel.app";
-const BASE_URL = "http://localhost:3001";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
@@ -89,8 +88,10 @@ export async function apiGet<T = unknown>(path: string): Promise<T> {
   return JSON.parse(text);
 }
 // Goals endpoints
-export async function fetchUserGoals(clientId: string = CURRENT_CLIENT_ID) {
-  return apiGet<any[]>(`/goals/client/${clientId}`);
+export async function fetchUserGoals(clientId?: string) {
+  const id = clientId || getCurrentClientId();
+  if (!id) throw new Error("User not logged in");
+  return apiGet<any[]>(`/goals/client/${id}`);
 }
 
 export async function fetchAvailableGoals() {
@@ -103,4 +104,83 @@ export async function fetchGoalById(id: string) {
 
 export async function createGoal(data: Record<string, unknown>) {
   return apiPost("/goals", data);
+}
+// Application endpoints
+export async function submitApplication(data: {
+  clientId: string;
+  goalId: string;
+  assistantId: string;
+  pitch: string;
+  status: "pending";
+  trialStatus: "none";
+}) {
+  return apiPost("/applications", data);
+}
+
+// Fetch applications by assistant ID (for assistant's "my applications" view)
+export async function fetchApplicationsByAssistant(assistantId: string) {
+  return apiGet<any[]>(`/applications/assistant/${assistantId}`);
+}
+
+// Fetch applications by client ID (for client's "received applications" view)
+export async function fetchApplicationsByClient(clientId: string) {
+  return apiGet<any[]>(`/applications/client/${clientId}`);
+}
+
+// Fetch single application by ID
+export async function fetchApplicationById(applicationId: string) {
+  return apiGet<any>(`/applications/${applicationId}`);
+}
+
+// Update application status (accept/reject)
+export async function updateApplicationStatus(
+  applicationId: string,
+  status: "accepted" | "rejected",
+) {
+  return apiPatch(`/applications/${applicationId}`, { status });
+}
+
+// Submit feedback for a session
+export interface FeedbackPayload {
+  applicationId: string;
+  providedBy: string;
+  receivedBy: string;
+  sessionDate: string;
+  clientPresent: boolean;
+  assistantPresent: boolean;
+  stars: number;
+  comment: string;
+}
+
+// Submit feedback as client
+export async function submitFeedbackAsClient(data: FeedbackPayload) {
+  return apiPost("/feedback/client", data as unknown as Record<string, unknown>);
+}
+
+// Submit feedback as assistant
+export async function submitFeedbackAsAssistant(data: FeedbackPayload) {
+  return apiPost("/feedback/assistant", data as unknown as Record<string, unknown>);
+}
+
+// Fetch feedback for an application
+export interface FeedbackEntry {
+  _id: string;
+  applicationId: string;
+  providedBy: string;
+  receivedBy: string;
+  sessionDate: string;
+  clientPresent: boolean;
+  assistantPresent: boolean;
+  stars?: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export async function fetchFeedbackByApplication(applicationId: string) {
+  return apiGet<FeedbackEntry[]>(`/feedback/application/${applicationId}`);
+}
+
+// Fetch feedback by client ID
+export async function fetchFeedbackByClient(clientId: string) {
+  return apiGet<FeedbackEntry[]>(`/feedback/client/${clientId}`);
 }

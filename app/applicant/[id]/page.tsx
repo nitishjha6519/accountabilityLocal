@@ -1,118 +1,151 @@
-"use client"
+"use client";
 
-import { ChevronLeft, Star, Clock, Check, X, MessageSquare, Loader2 } from "lucide-react"
-import Link from "next/link"
-import { useRouter, useParams } from "next/navigation"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { apiPatch } from "@/lib/api"
+import {
+  ChevronLeft,
+  Clock,
+  Check,
+  X,
+  MessageSquare,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { fetchApplicationById, updateApplicationStatus } from "@/lib/api";
+import { getRelativeTime, generateColorFromString } from "@/lib/transformers";
 
-const applicantsData: Record<string, {
-  id: string
-  name: string
-  initials: string
-  avatarColor: string
-  rating: number
-  reviews: number
-  specialty: string
-  experience: string
-  completedGoals: number
-  successRate: number
-  goalTitle: string
-  pitch: string
-  appliedTime: string
-  reward: number
-  availability: string
-  languages: string[]
-}> = {
-  "1": {
-    id: "1",
-    name: "Alex Morgan",
-    initials: "AM",
-    avatarColor: "#6366f1",
-    rating: 4.9,
-    reviews: 127,
-    specialty: "Fitness Coach",
-    experience: "5+ years",
-    completedGoals: 89,
-    successRate: 96,
-    goalTitle: "Marathon Training Prep",
-    pitch: "I've helped 50+ runners complete their first marathon. I check Strava daily and send personalized feedback. I'll create a custom check-in schedule that fits your lifestyle and keeps you on track even on busy weeks.",
-    appliedTime: "2 hours ago",
-    reward: 50,
-    availability: "Daily 6AM-10PM EST",
-    languages: ["English", "Spanish"],
-  },
-  "2": {
-    id: "2",
-    name: "Jordan Lee",
-    initials: "JL",
-    avatarColor: "#10b981",
-    rating: 4.7,
-    reviews: 84,
-    specialty: "Writing Coach",
-    experience: "3+ years",
-    completedGoals: 62,
-    successRate: 94,
-    goalTitle: "Finish my Novel Draft",
-    pitch: "As a published author myself, I understand the struggles of writer's block. I'll check in every morning and provide motivational support plus constructive feedback on your progress.",
-    appliedTime: "5 hours ago",
-    reward: 50,
-    availability: "Daily 7AM-9PM PST",
-    languages: ["English"],
-  },
-  "3": {
-    id: "3",
-    name: "Sam Wilson",
-    initials: "SW",
-    avatarColor: "#f59e0b",
-    rating: 4.8,
-    reviews: 156,
-    specialty: "Life Coach",
-    experience: "7+ years",
-    completedGoals: 134,
-    successRate: 98,
-    goalTitle: "Launch MVP",
-    pitch: "I've coached 20+ startup founders to launch. I'll do daily stand-ups, help prioritize tasks, and call you out when you're making excuses. No sugarcoating - just results.",
-    appliedTime: "1 day ago",
-    reward: 200,
-    availability: "Daily 8AM-11PM EST",
-    languages: ["English", "French"],
-  },
+interface ApplicationData {
+  _id: string;
+  goalId: {
+    _id: string;
+    title: string;
+    rewardAmount?: number;
+    pledgeAmount?: number;
+  };
+  assistantId:
+    | string
+    | {
+        _id: string;
+        fullName?: string;
+        initials?: string;
+      };
+  pitch: string;
+  status: "pending" | "accepted" | "rejected";
+  createdAt: string;
 }
 
 export default function ApplicantDetailsPage() {
-  const router = useRouter()
-  const params = useParams()
-  const [showConfirmModal, setShowConfirmModal] = useState<"accept" | "reject" | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [error, setError] = useState("")
+  const router = useRouter();
+  const params = useParams();
+  const [showConfirmModal, setShowConfirmModal] = useState<
+    "accept" | "reject" | null
+  >(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("");
+  const [application, setApplication] = useState<ApplicationData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const id = params.id as string
-  const applicant = applicantsData[id] || applicantsData["1"]
+  const id = params.id as string;
+
+  useEffect(() => {
+    async function loadApplication() {
+      try {
+        const data = await fetchApplicationById(id);
+        setApplication(data);
+      } catch (err) {
+        console.error("Failed to fetch application:", err);
+        setError("Failed to load application details");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadApplication();
+  }, [id]);
+
+  // Extract assistant info
+  const assistant =
+    typeof application?.assistantId === "object"
+      ? application.assistantId
+      : null;
+  const assistantIdStr =
+    typeof application?.assistantId === "object"
+      ? application.assistantId._id
+      : application?.assistantId || "";
+  const assistantName =
+    assistant?.fullName || `Assistant ${assistantIdStr.substring(0, 4)}`;
+  const assistantInitials =
+    assistant?.initials ||
+    assistantName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  const avatarColor = generateColorFromString(assistantIdStr);
+
+  // Extract goal info
+  const goalTitle = application?.goalId?.title || "Goal";
+  const reward =
+    application?.goalId?.rewardAmount || application?.goalId?.pledgeAmount || 0;
+  const appliedTime = application?.createdAt
+    ? getRelativeTime(application.createdAt)
+    : "";
 
   const handleConfirm = async () => {
-    setIsProcessing(true)
-    setError("")
+    setIsProcessing(true);
+    setError("");
     try {
-      const status = showConfirmModal === "accept" ? "accepted" : "rejected"
-      await apiPatch(`/applications/${id}`, { status })
-      setShowConfirmModal(null)
-      router.push("/dashboard?role=client&tab=applications")
+      const status = showConfirmModal === "accept" ? "accepted" : "rejected";
+      await updateApplicationStatus(id, status);
+      setShowConfirmModal(null);
+      router.push("/dashboard?role=client&tab=applications");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update application")
-      setIsProcessing(false)
+      setError(
+        err instanceof Error ? err.message : "Failed to update application",
+      );
+      setIsProcessing(false);
     }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!application) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background gap-4">
+        <p className="text-muted-foreground">
+          {error || "Application not found"}
+        </p>
+        <Button
+          onClick={() => router.push("/dashboard?role=client&tab=applications")}
+        >
+          Go Back
+        </Button>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur">
         <div className="flex items-center justify-between px-4 py-3">
-          <button onClick={() => router.back()} className="text-foreground">
+          <button
+            onClick={() =>
+              router.push("/dashboard?role=client&tab=applications")
+            }
+            className="text-foreground"
+          >
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-lg font-semibold text-foreground">Applicant Details</h1>
+          <h1 className="text-lg font-semibold text-foreground">
+            Applicant Details
+          </h1>
           <div className="w-6" />
         </div>
       </header>
@@ -122,105 +155,101 @@ export default function ApplicantDetailsPage() {
         <div className="flex items-start gap-4">
           <div
             className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-2xl font-semibold text-white"
-            style={{ backgroundColor: applicant.avatarColor }}
+            style={{ backgroundColor: avatarColor }}
           >
-            {applicant.initials}
+            {assistantInitials}
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-foreground">{applicant.name}</h2>
-            <p className="text-muted-foreground">{applicant.specialty}</p>
-            <div className="mt-2 flex items-center gap-3">
-              <span className="flex items-center gap-1 text-warning">
-                <Star className="h-4 w-4 fill-current" />
-                {applicant.rating}
-              </span>
-              <span className="text-sm text-muted-foreground">({applicant.reviews} reviews)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="mt-6 grid grid-cols-3 gap-3">
-          <div className="flex flex-col items-center rounded-xl bg-card p-4">
-            <span className="text-2xl font-bold text-foreground">{applicant.completedGoals}</span>
-            <span className="text-xs text-muted-foreground">Goals Completed</span>
-          </div>
-          <div className="flex flex-col items-center rounded-xl bg-card p-4">
-            <span className="text-2xl font-bold text-foreground">{applicant.successRate}%</span>
-            <span className="text-xs text-muted-foreground">Success Rate</span>
-          </div>
-          <div className="flex flex-col items-center rounded-xl bg-card p-4">
-            <span className="text-2xl font-bold text-foreground">{applicant.experience}</span>
-            <span className="text-xs text-muted-foreground">Experience</span>
+            <h2 className="text-2xl font-bold text-foreground">
+              {assistantName}
+            </h2>
+            <p className="text-muted-foreground">Accountability Partner</p>
           </div>
         </div>
 
         {/* Applying For */}
         <section className="mt-6">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Applying For</h3>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Applying For
+          </h3>
           <div className="mt-2 rounded-xl bg-primary/10 p-4">
-            <p className="font-semibold text-primary">{applicant.goalTitle}</p>
+            <Link
+              href={`/goal/${application.goalId._id}`}
+              className="font-semibold text-primary hover:underline"
+            >
+              {goalTitle}
+            </Link>
             <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                {applicant.appliedTime}
+                Applied {appliedTime}
               </span>
-              <span className="text-reward">${applicant.reward} Reward</span>
+              <span className="text-reward">${reward} Reward</span>
             </div>
           </div>
         </section>
 
         {/* Their Pitch */}
         <section className="mt-6">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Their Pitch</h3>
-          <p className="mt-2 leading-relaxed text-foreground">{applicant.pitch}</p>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Their Pitch
+          </h3>
+          <p className="mt-2 leading-relaxed text-foreground">
+            {application.pitch || "No pitch provided."}
+          </p>
         </section>
 
-        {/* Additional Info */}
-        <section className="mt-6">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Availability</h3>
-          <p className="mt-2 text-foreground">{applicant.availability}</p>
-        </section>
+        {/* Status Badge */}
+        {application.status !== "pending" && (
+          <section className="mt-6">
+            <div
+              className={`rounded-xl p-4 text-center ${
+                application.status === "accepted"
+                  ? "bg-success/10 text-success"
+                  : "bg-destructive/10 text-destructive"
+              }`}
+            >
+              <p className="font-semibold">
+                {application.status === "accepted"
+                  ? "Application Accepted"
+                  : "Application Rejected"}
+              </p>
+            </div>
+          </section>
+        )}
 
-        <section className="mt-4">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Languages</h3>
-          <div className="mt-2 flex gap-2">
-            {applicant.languages.map((lang) => (
-              <span key={lang} className="rounded-full bg-secondary px-3 py-1 text-sm text-foreground">
-                {lang}
-              </span>
-            ))}
-          </div>
-        </section>
+        {/* Action Buttons - only show for pending applications */}
+        {application.status === "pending" && (
+          <>
+            <div className="mt-8 flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2 border-muted-foreground/30 bg-transparent py-6"
+              >
+                <MessageSquare className="h-5 w-5" />
+                Message
+              </Button>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1 gap-2 border-muted-foreground/30 bg-transparent py-6"
-          >
-            <MessageSquare className="h-5 w-5" />
-            Message
-          </Button>
-        </div>
-
-        <div className="mt-4 flex gap-3 pb-8">
-          <Button
-            variant="outline"
-            className="flex-1 gap-2 border-destructive py-6 text-destructive hover:bg-destructive/10 bg-transparent"
-            onClick={() => setShowConfirmModal("reject")}
-          >
-            <X className="h-5 w-5" />
-            Reject
-          </Button>
-          <Button
-            className="flex-1 gap-2 bg-primary py-6 text-primary-foreground hover:bg-primary/90"
-            onClick={() => setShowConfirmModal("accept")}
-          >
-            <Check className="h-5 w-5" />
-            Approve
-          </Button>
-        </div>
+            <div className="mt-4 flex gap-3 pb-8">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2 border-destructive py-6 text-destructive hover:bg-destructive/10 bg-transparent"
+                onClick={() => setShowConfirmModal("reject")}
+              >
+                <X className="h-5 w-5" />
+                Reject
+              </Button>
+              <Button
+                className="flex-1 gap-2 bg-primary py-6 text-primary-foreground hover:bg-primary/90"
+                onClick={() => setShowConfirmModal("accept")}
+              >
+                <Check className="h-5 w-5" />
+                Approve
+              </Button>
+            </div>
+          </>
+        )}
       </main>
 
       {/* Confirmation Modal */}
@@ -228,9 +257,13 @@ export default function ApplicantDetailsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-background p-6">
             <div className="mb-4 flex justify-center">
-              <div className={`flex h-16 w-16 items-center justify-center rounded-full ${
-                showConfirmModal === "accept" ? "bg-success/20" : "bg-destructive/20"
-              }`}>
+              <div
+                className={`flex h-16 w-16 items-center justify-center rounded-full ${
+                  showConfirmModal === "accept"
+                    ? "bg-success/20"
+                    : "bg-destructive/20"
+                }`}
+              >
                 {showConfirmModal === "accept" ? (
                   <Check className="h-8 w-8 text-success" />
                 ) : (
@@ -240,13 +273,14 @@ export default function ApplicantDetailsPage() {
             </div>
 
             <h2 className="text-center text-lg font-semibold text-foreground">
-              {showConfirmModal === "accept" ? "Approve Applicant?" : "Reject Applicant?"}
+              {showConfirmModal === "accept"
+                ? "Approve Applicant?"
+                : "Reject Applicant?"}
             </h2>
             <p className="mt-2 text-center text-sm text-muted-foreground">
               {showConfirmModal === "accept"
-                ? `You're about to approve ${applicant.name} as your accountability partner for "${applicant.goalTitle}".`
-                : `You're about to reject ${applicant.name}'s application for "${applicant.goalTitle}".`
-              }
+                ? `You're about to approve ${assistantName} as your accountability partner for "${goalTitle}".`
+                : `You're about to reject ${assistantName}'s application for "${goalTitle}".`}
             </p>
 
             {error && (
@@ -259,7 +293,10 @@ export default function ApplicantDetailsPage() {
               <Button
                 variant="outline"
                 className="flex-1 bg-transparent"
-                onClick={() => { setShowConfirmModal(null); setError(""); }}
+                onClick={() => {
+                  setShowConfirmModal(null);
+                  setError("");
+                }}
                 disabled={isProcessing}
               >
                 Cancel
@@ -275,8 +312,10 @@ export default function ApplicantDetailsPage() {
               >
                 {isProcessing ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
+                ) : showConfirmModal === "accept" ? (
+                  "Confirm"
                 ) : (
-                  showConfirmModal === "accept" ? "Confirm" : "Reject"
+                  "Reject"
                 )}
               </Button>
             </div>
@@ -284,5 +323,5 @@ export default function ApplicantDetailsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

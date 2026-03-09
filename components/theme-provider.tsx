@@ -24,7 +24,7 @@ function getSystemTheme(): "light" | "dark" {
 function getStoredTheme(): Theme {
   if (typeof window === "undefined") return "light"
   try {
-    return (sessionStorage.getItem("app-theme") as Theme) || "light"
+    return (localStorage.getItem("app-theme") as Theme) || "light"
   } catch {
     return "light"
   }
@@ -81,7 +81,7 @@ export function ThemeProvider({
     (newTheme: Theme) => {
       setThemeState(newTheme)
       try {
-        sessionStorage.setItem("app-theme", newTheme)
+        localStorage.setItem("app-theme", newTheme)
       } catch {}
       resolveAndApply(newTheme)
     },

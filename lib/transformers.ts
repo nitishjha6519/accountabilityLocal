@@ -1,5 +1,11 @@
 // Constants
-export const CURRENT_CLIENT_ID = "65a8f4c2b1234567890abcde";
+import { getUser } from "@/lib/auth";
+
+// Get current client ID from logged-in user
+export function getCurrentClientId(): string | null {
+  const user = getUser();
+  return user?.id ?? null;
+}
 
 // Helper function to calculate relative time
 export function getRelativeTime(date: string | Date): string {
@@ -189,4 +195,332 @@ export function transformToAvailableGoal(apiGoal: APIGoal): AvailableGoal {
 
 export function transformAvailableGoals(apiGoals: APIGoal[]): AvailableGoal[] {
   return apiGoals.map(transformToAvailableGoal);
+}
+
+// Home page goal card format
+export interface HomeGoal {
+  id: string;
+  name: string;
+  initials: string;
+  avatarColor: string;
+  postedTime: string;
+  reward: number;
+  title: string;
+  description: string;
+  duration: string;
+  category: string;
+  categoryIcon: "fitness" | "career" | "language" | "business";
+}
+
+export function transformToHomeGoal(apiGoal: APIGoal): HomeGoal {
+  // Generate client name placeholder
+  const clientName = `Client ${apiGoal.clientId.substring(0, 4)}`;
+  const initials = clientName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
+  // Map category to icon
+  const categoryIconMap: Record<
+    string,
+    "fitness" | "career" | "language" | "business"
+  > = {
+    fitness: "fitness",
+    productivity: "career",
+    career: "career",
+    language: "language",
+    business: "business",
+  };
+
+  const category = apiGoal.category || "fitness";
+  const categoryIcon = categoryIconMap[category.toLowerCase()] || "fitness";
+
+  return {
+    id: apiGoal._id,
+    name: clientName,
+    initials,
+    avatarColor: generateColorFromString(apiGoal._id),
+    postedTime: getRelativeTime(apiGoal.createdAt),
+    reward: apiGoal.rewardAmount || apiGoal.pledgeAmount || 0,
+    title: apiGoal.title,
+    description: apiGoal.description || "",
+    duration: getDurationDisplay(apiGoal.startDate, apiGoal.endDate),
+    category: category.charAt(0).toUpperCase() + category.slice(1),
+    categoryIcon,
+  };
+}
+
+export function transformHomeGoals(apiGoals: APIGoal[]): HomeGoal[] {
+  return apiGoals.map(transformToHomeGoal);
+}
+
+// Application transformer for assistant's submitted applications view
+export interface APIApplication {
+  _id: string;
+  clientId:
+    | string
+    | null
+    | {
+        _id: string;
+        fullName?: string;
+        email?: string;
+        initials?: string;
+        [key: string]: unknown;
+      };
+  goalId:
+    | string
+    | {
+        _id: string;
+        clientId: string;
+        title: string;
+        description?: string;
+        rewardAmount?: number;
+        pledgeAmount?: number;
+        startDate?: string;
+        endDate?: string;
+        checkInFrequency?: string;
+        [key: string]: unknown;
+      };
+  assistantId:
+    | string
+    | {
+        _id: string;
+        fullName?: string;
+        email?: string;
+        initials?: string;
+        [key: string]: unknown;
+      };
+  pitch: string;
+  status: "pending" | "accepted" | "rejected";
+  trialStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubmittedApplication {
+  id: string;
+  goalId: string;
+  goalTitle: string;
+  clientName: string;
+  clientInitials: string;
+  avatarColor: string;
+  reward: number;
+  appliedTime: string;
+  status: "pending" | "accepted" | "rejected";
+}
+
+export function transformToSubmittedApplication(
+  apiApp: APIApplication,
+): SubmittedApplication {
+  // Handle goalId as either string or populated object
+  const goal = typeof apiApp.goalId === "object" ? apiApp.goalId : null;
+  const goalIdStr =
+    typeof apiApp.goalId === "object" ? apiApp.goalId._id : apiApp.goalId;
+
+  // Handle clientId as either string, null, or populated object
+  const client =
+    typeof apiApp.clientId === "object" && apiApp.clientId
+      ? apiApp.clientId
+      : null;
+  const clientIdStr =
+    typeof apiApp.clientId === "object" && apiApp.clientId
+      ? apiApp.clientId._id
+      : typeof apiApp.clientId === "string"
+        ? apiApp.clientId
+        : goal?.clientId || "";
+
+  const goalTitle = goal?.title || "Goal";
+  const clientName =
+    client?.fullName ||
+    `Client ${clientIdStr ? clientIdStr.substring(0, 4) : "????"}`;
+  const clientInitials =
+    client?.initials ||
+    clientName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+
+  return {
+    id: apiApp._id,
+    goalId: goalIdStr,
+    goalTitle,
+    clientName,
+    clientInitials,
+    avatarColor: generateColorFromString(clientIdStr || apiApp._id),
+    reward: goal?.rewardAmount || goal?.pledgeAmount || 0,
+    appliedTime: getRelativeTime(apiApp.createdAt),
+    status: apiApp.status,
+  };
+}
+
+export function transformSubmittedApplications(
+  apiApps: APIApplication[],
+): SubmittedApplication[] {
+  return apiApps.map(transformToSubmittedApplication);
+}
+
+// Received application transformer for client's "received applications" view
+export interface ReceivedApplicant {
+  id: string;
+  goalId: string;
+  name: string;
+  initials: string;
+  avatarColor: string;
+  rating: number;
+  specialty: string;
+  pitch: string;
+  appliedTime: string;
+  reward: number;
+  goalTitle: string;
+  status: "pending" | "accepted" | "rejected";
+}
+
+export function transformToReceivedApplicant(
+  apiApp: APIApplication,
+): ReceivedApplicant {
+  // Handle goalId as either string or populated object
+  const goal = typeof apiApp.goalId === "object" ? apiApp.goalId : null;
+  const goalIdStr =
+    typeof apiApp.goalId === "object" ? apiApp.goalId._id : apiApp.goalId;
+
+  // Handle assistantId as either string or populated object
+  const assistant =
+    typeof apiApp.assistantId === "object" ? apiApp.assistantId : null;
+  const assistantIdStr =
+    typeof apiApp.assistantId === "object"
+      ? apiApp.assistantId._id
+      : apiApp.assistantId;
+
+  const goalTitle = goal?.title || "Goal";
+  const assistantName =
+    assistant?.fullName || `Assistant ${assistantIdStr.substring(0, 4)}`;
+  const initials =
+    assistant?.initials ||
+    assistantName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+
+  return {
+    id: apiApp._id,
+    goalId: goalIdStr,
+    name: assistantName,
+    initials,
+    avatarColor: generateColorFromString(assistantIdStr),
+    rating: 0, // Will be populated from user profile if available
+    specialty: "Accountability Partner",
+    pitch: apiApp.pitch || "",
+    appliedTime: getRelativeTime(apiApp.createdAt),
+    reward: goal?.rewardAmount || goal?.pledgeAmount || 0,
+    goalTitle,
+    status: apiApp.status,
+  };
+}
+
+export function transformReceivedApplicants(
+  apiApps: APIApplication[],
+): ReceivedApplicant[] {
+  return apiApps.map(transformToReceivedApplicant);
+}
+
+// Trial interface matching trials-tab.tsx
+export interface Trial {
+  id: string;
+  goalTitle: string;
+  partnerName: string;
+  partnerInitials: string;
+  avatarColor: string;
+  startDate: string;
+  endDate: string;
+  frequency: "Daily" | "3x Weekly";
+}
+
+// Transform accepted applications to trials
+// For clients: partner is the assistant
+// For assistants: partner is the client
+export function transformToTrials(
+  apiApps: APIApplication[],
+  viewerRole: "client" | "assistant",
+): Trial[] {
+  // Filter only accepted applications
+  const acceptedApps = apiApps.filter((app) => app.status === "accepted");
+
+  return acceptedApps.map((apiApp) => {
+    // Handle goalId as either string or populated object
+    const goal = typeof apiApp.goalId === "object" ? apiApp.goalId : null;
+
+    // Handle assistantId and clientId
+    const assistant =
+      typeof apiApp.assistantId === "object" ? apiApp.assistantId : null;
+    const assistantIdStr =
+      typeof apiApp.assistantId === "object"
+        ? apiApp.assistantId._id
+        : apiApp.assistantId;
+
+    const client =
+      typeof apiApp.clientId === "object" && apiApp.clientId
+        ? apiApp.clientId
+        : null;
+    const clientIdStr =
+      typeof apiApp.clientId === "object" && apiApp.clientId
+        ? apiApp.clientId._id
+        : typeof apiApp.clientId === "string"
+          ? apiApp.clientId
+          : "";
+
+    // Determine partner based on viewer role
+    let partnerName: string;
+    let partnerIdStr: string;
+
+    if (viewerRole === "client") {
+      // Client views assistant as partner
+      partnerName =
+        assistant?.fullName || `Assistant ${assistantIdStr.substring(0, 4)}`;
+      partnerIdStr = assistantIdStr;
+    } else {
+      // Assistant views client as partner
+      partnerName =
+        client?.fullName ||
+        (clientIdStr ? `Client ${clientIdStr.substring(0, 4)}` : "Client");
+      partnerIdStr = clientIdStr || apiApp._id;
+    }
+
+    const partnerInitials = partnerName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+
+    // Map checkInFrequency to frequency type
+    const freqStr =
+      typeof goal?.checkInFrequency === "string"
+        ? goal.checkInFrequency.toLowerCase()
+        : "daily";
+    const frequency: "Daily" | "3x Weekly" = freqStr.includes("3")
+      ? "3x Weekly"
+      : "Daily";
+
+    // Get dates with proper type conversion
+    const startDate =
+      typeof goal?.startDate === "string" ? goal.startDate : apiApp.createdAt;
+    const endDate =
+      typeof goal?.endDate === "string" ? goal.endDate : apiApp.createdAt;
+
+    return {
+      id: apiApp._id,
+      goalTitle: goal?.title || "Goal",
+      partnerName,
+      partnerInitials,
+      avatarColor: generateColorFromString(partnerIdStr),
+      startDate,
+      endDate,
+      frequency,
+    };
+  });
 }

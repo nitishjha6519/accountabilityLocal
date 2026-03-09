@@ -1,9 +1,24 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { fetchUserGoals, fetchAvailableGoals } from "@/lib/api";
-import { transformGoalsData, CURRENT_CLIENT_ID } from "@/lib/transformers";
+import { useSearchParams, useRouter } from "next/navigation";
+import {
+  fetchUserGoals,
+  fetchAvailableGoals,
+  fetchApplicationsByAssistant,
+  fetchApplicationsByClient,
+} from "@/lib/api";
+import {
+  transformGoalsData,
+  getCurrentClientId,
+  transformSubmittedApplications,
+  SubmittedApplication,
+  transformReceivedApplicants,
+  ReceivedApplicant,
+  transformToTrials,
+  Trial,
+} from "@/lib/transformers";
+import { getUser, isLoggedIn } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { PostGoalCard } from "@/components/dashboard/post-goal-card";
 import { GoalsTabClient } from "@/components/dashboard/goals-tab-client";
@@ -16,162 +31,9 @@ import { BottomNavigation } from "@/components/dashboard/bottom-navigation";
 type UserRole = "client" | "assistant";
 type Tab = "goals" | "applications" | "trials";
 type ApplicationFilter = "received" | "shortlisted" | "archived";
-type AssistantAppFilter = "my-clients" | "pending" | "accepted" | "rejected";
+type AssistantAppFilter = "pending" | "accepted" | "rejected";
 type TrialFilter = "active" | "history";
 type DiscoverFilter = "all" | "fitness" | "productivity" | "career";
-
-const applicants = [
-  {
-    id: "1",
-    name: "Sarah Jenkins",
-    initials: "SJ",
-    avatarColor: "#6366f1",
-    rating: 4.9,
-    specialty: "Language Specialist",
-    pitch:
-      "Bonjour! I saw you want to learn French basics. I lived in Lyon for 5 years and have helped 20+ people stay accountable. I won't just ask if yo...",
-    appliedTime: "2h ago",
-    reward: 30,
-    goalTitle: "Learn French Basics",
-  },
-  {
-    id: "2",
-    name: "Marcus Chen",
-    initials: "MC",
-    avatarColor: "#f59e0b",
-    rating: 5.0,
-    specialty: "Tech Founder Coach",
-    pitch:
-      "Shipping an MVP is tough. I've been a PM at a YC startup. I'll make sure you hit your weekly milestones. No excuses is exactly my style....",
-    appliedTime: "5h ago",
-    reward: 200,
-    goalTitle: "Launch MVP",
-  },
-  {
-    id: "3",
-    name: "Jean-Luc P.",
-    initials: "JL",
-    avatarColor: "#3b82f6",
-    rating: 4.8,
-    specialty: "French Tutor",
-    pitch: "Native speaker here. I can help with...",
-    appliedTime: "1d ago",
-    reward: 30,
-    goalTitle: "Learn French Basics",
-  },
-];
-
-const trials = [
-  {
-    id: "1",
-    goalTitle: "Learn French Basics",
-    partnerName: "Maria K.",
-    partnerInitials: "MK",
-    avatarColor: "#10b981",
-    weeklyStreak: 5,
-    status: "done" as const,
-    startDate: "2026-01-05",
-    endDate: "2026-03-05",
-    frequency: "Daily" as const,
-  },
-  {
-    id: "2",
-    goalTitle: "Launch MVP",
-    partnerName: "James O.",
-    partnerInitials: "JO",
-    avatarColor: "#f59e0b",
-    weeklyStreak: 0,
-    status: "starting-soon" as const,
-    startDate: "2026-02-10",
-    endDate: "2026-04-10",
-    frequency: "3x Weekly" as const,
-  },
-  {
-    id: "3",
-    goalTitle: "Marathon Prep",
-    partnerName: "Sarah L.",
-    partnerInitials: "SL",
-    avatarColor: "#ec4899",
-    totalProgress: "30/30 Days",
-    status: "completed" as const,
-    startDate: "2025-11-01",
-    endDate: "2025-12-01",
-    frequency: "Daily" as const,
-  },
-];
-
-// Assistant-specific data
-const myClients = [
-  {
-    id: "1",
-    name: "Sarah Jenkins",
-    initials: "SJ",
-    avatarColor: "#6366f1",
-    goalCategory: "Marathon Training",
-    categoryIcon: "fitness" as const,
-    status: "check-in-needed" as const,
-    latestUpdate:
-      '"Completed 10k run today. Knee feels slightly sore but managed to keep pace."',
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "2",
-    name: "Mike Ross",
-    initials: "MR",
-    avatarColor: "#3b82f6",
-    goalCategory: "Learn Spanish",
-    categoryIcon: "language" as const,
-    status: "on-track" as const,
-    latestUpdate:
-      '"Finished unit 4 vocab. Struggling a bit with irregular verbs, might need extra..."',
-    lastActive: "1 day ago",
-  },
-  {
-    id: "3",
-    name: "Elena Rodriguez",
-    initials: "ER",
-    avatarColor: "#ec4899",
-    goalCategory: "Career Transition",
-    categoryIcon: "career" as const,
-    status: "pending" as const,
-    latestUpdate:
-      '"Updated my resume based on your feedback. Applying to 5 roles today!"',
-    lastActive: "3 hours ago",
-  },
-];
-
-const submittedApplications = [
-  {
-    id: "1",
-    goalTitle: "Learn French Basics",
-    clientName: "Maria K.",
-    clientInitials: "MK",
-    avatarColor: "#10b981",
-    reward: 30,
-    appliedTime: "2h ago",
-    status: "pending" as const,
-  },
-  {
-    id: "2",
-    goalTitle: "Launch MVP",
-    clientName: "James O.",
-    clientInitials: "JO",
-    avatarColor: "#f59e0b",
-    reward: 200,
-    appliedTime: "1d ago",
-    status: "accepted" as const,
-  },
-  {
-    id: "3",
-    goalTitle: "Gym 4x/Week",
-    clientName: "David C.",
-    clientInitials: "DC",
-    avatarColor: "#ef4444",
-    reward: 50,
-    appliedTime: "3d ago",
-    status: "rejected" as const,
-  },
-];
 
 // Available goals for assistant discover screen
 const availableGoals = [
@@ -225,19 +87,37 @@ const availableGoals = [
 
 export default function DashboardPage() {
   console.log("DashboardPage: RENDERING");
+  const router = useRouter();
   const searchParams = useSearchParams();
   const hasInitialized = useRef(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [role, setRole] = useState<UserRole>("client");
   const [activeTab, setActiveTab] = useState<Tab>("goals");
   const [applicationFilter, setApplicationFilter] =
     useState<ApplicationFilter>("received");
   const [assistantAppFilter, setAssistantAppFilter] =
-    useState<AssistantAppFilter>("my-clients");
+    useState<AssistantAppFilter>("pending");
   const [trialFilter, setTrialFilter] = useState<TrialFilter>("active");
   const [discoverFilter, setDiscoverFilter] = useState<DiscoverFilter>("all");
   const [userGoalsData, setUserGoalsData] = useState<any[]>([]);
   const [availableGoalsData, setAvailableGoalsData] = useState<any[]>([]);
+  const [submittedApplications, setSubmittedApplications] = useState<
+    SubmittedApplication[]
+  >([]);
+  const [receivedApplicants, setReceivedApplicants] = useState<
+    ReceivedApplicant[]
+  >([]);
+  const [trials, setTrials] = useState<Trial[]>([]);
   const [loadingGoals, setLoadingGoals] = useState(false);
+
+  // Auth check - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      router.replace("/login");
+    } else {
+      setIsAuthChecked(true);
+    }
+  }, [router]);
 
   console.log("DashboardPage: STATE INITIALIZED", {
     userGoalsData: userGoalsData.length,
@@ -246,6 +126,7 @@ export default function DashboardPage() {
 
   // Fetch goals on mount - FIRST
   useEffect(() => {
+    if (!isAuthChecked) return;
     (async () => {
       try {
         setLoadingGoals(true);
@@ -259,21 +140,26 @@ export default function DashboardPage() {
         setLoadingGoals(false);
       }
     })();
-  }, []);
+  }, [isAuthChecked]);
 
-  // Fetch available goals for assistant discover screen - SECOND
   // Fetch available goals for assistant discover screen
   useEffect(() => {
+    if (!isAuthChecked) return;
     (async () => {
       try {
         const goals = await fetchAvailableGoals();
-        const transformed = transformGoalsData(goals);
+        // Sort by newest first (descending by createdAt)
+        const sortedGoals = [...(goals || [])].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        const transformed = transformGoalsData(sortedGoals);
         setAvailableGoalsData(transformed || []);
         console.log("useEffect: available goals fetched:", goals?.length || 0);
 
         // // Filter out user's own goals (those with clientId matching current user)
+        // const currentUserId = getCurrentClientId();
         // const filteredGoals =
-        //   goals?.filter((goal: any) => goal.clientId !== CURRENT_CLIENT_ID) ||
+        //   goals?.filter((goal: any) => goal.clientId !== currentUserId) ||
         //   [];
         // console.log(
         //   "useEffect: filtered available goals (excluding own):",
@@ -285,7 +171,78 @@ export default function DashboardPage() {
         console.error("Failed to fetch available goals:", err);
       }
     })();
-  }, [role]);
+  }, [role, isAuthChecked]);
+
+  // Fetch applications for assistant
+  useEffect(() => {
+    if (!isAuthChecked || role !== "assistant") return;
+
+    const user = getUser();
+    if (!user?.id) return;
+
+    (async () => {
+      try {
+        const apps = await fetchApplicationsByAssistant(user.id);
+        const transformed = transformSubmittedApplications(apps);
+        setSubmittedApplications(transformed);
+        console.log(
+          "useEffect: assistant applications fetched:",
+          apps?.length || 0,
+        );
+      } catch (err) {
+        console.error("Failed to fetch applications:", err);
+      }
+    })();
+  }, [role, isAuthChecked]);
+
+  // Fetch received applications for client
+  useEffect(() => {
+    if (!isAuthChecked || role !== "client") return;
+
+    const user = getUser();
+    if (!user?.id) return;
+
+    (async () => {
+      try {
+        const apps = await fetchApplicationsByClient(user.id);
+        const transformed = transformReceivedApplicants(apps);
+        setReceivedApplicants(transformed);
+        console.log(
+          "useEffect: client received applications fetched:",
+          apps?.length || 0,
+        );
+      } catch (err) {
+        console.error("Failed to fetch received applications:", err);
+      }
+    })();
+  }, [role, isAuthChecked]);
+
+  // Fetch trials (accepted applications)
+  useEffect(() => {
+    if (!isAuthChecked) return;
+    const user = getUser();
+    if (!user?.id) return;
+
+    (async () => {
+      try {
+        // Fetch applications based on role
+        const apps =
+          role === "client"
+            ? await fetchApplicationsByClient(user.id)
+            : await fetchApplicationsByAssistant(user.id);
+
+        console.log("Trials: fetched apps:", apps?.length, apps);
+        console.log("Trials: accepted apps:", apps?.filter((a: any) => a.status === "accepted"));
+
+        // Transform to trials (filters only accepted applications internally)
+        const transformedTrials = transformToTrials(apps, role);
+        console.log("Trials: transformed:", transformedTrials);
+        setTrials(transformedTrials);
+      } catch (err) {
+        console.error("Failed to fetch trials:", err);
+      }
+    })();
+  }, [role, isAuthChecked]);
 
   // Search params effect
   useEffect(() => {
@@ -307,7 +264,6 @@ export default function DashboardPage() {
       setActiveTab(tabParam);
     }
     if (
-      filterParam === "my-clients" ||
       filterParam === "pending" ||
       filterParam === "accepted" ||
       filterParam === "rejected"
@@ -315,6 +271,15 @@ export default function DashboardPage() {
       setAssistantAppFilter(filterParam);
     }
   }, [searchParams]);
+
+  // Show loading while checking auth
+  if (!isAuthChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -339,7 +304,7 @@ export default function DashboardPage() {
           <ApplicationsTabClient
             filter={applicationFilter}
             onFilterChange={setApplicationFilter}
-            applicants={applicants}
+            applicants={receivedApplicants}
           />
         )}
 
@@ -347,7 +312,6 @@ export default function DashboardPage() {
           <ApplicationsTabAssistant
             filter={assistantAppFilter}
             onFilterChange={setAssistantAppFilter}
-            myClients={myClients}
             submittedApplications={submittedApplications}
           />
         )}
@@ -357,6 +321,7 @@ export default function DashboardPage() {
             trials={trials}
             filter={trialFilter}
             onFilterChange={setTrialFilter}
+            role={role}
           />
         )}
       </main>
