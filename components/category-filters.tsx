@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-const categories = ["All", "Fitness", "Career", "Study", "Health", "Creative"]
+const categories = ["Fitness", "Interview", "Speaking"]
 
 export function CategoryFilters() {
   const [active, setActive] = useState("All")

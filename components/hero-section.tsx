@@ -6,8 +6,9 @@ export function HeroSection() {
         <span className="text-primary">Achieve your goals.</span>
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-muted-foreground md:text-lg">
-        Connect with vetted assistants who help you stay consistent and focused.
+        Stop consuming. Start producing. Find someone who keeps you showing up —
+        for your interviews, speaking, fitness- 100 reps.{" "}
       </p>
     </section>
-  )
+  );
 }
