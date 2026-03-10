@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CheckCircle2, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,11 @@ import { useTheme } from "@/components/theme-provider";
 
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -29,9 +35,14 @@ export function Header() {
             size="icon"
             onClick={toggleTheme}
             className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            suppressHydrationWarning
           >
-            {resolvedTheme === "dark" ? (
-              <Sun className="h-5 w-5" />
+            {mounted ? (
+              resolvedTheme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )
             ) : (
               <Moon className="h-5 w-5" />
             )}
