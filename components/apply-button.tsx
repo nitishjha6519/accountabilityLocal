@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { Users, Clock, XCircle } from "lucide-react";
 import { submitApplication } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 
 interface ApplyButtonProps {
   goalId: string;
   clientId: string;
+  startDate?: string;
+  endDate?: string;
 }
 
-export function ApplyButton({ goalId, clientId }: ApplyButtonProps) {
+export function ApplyButton({ goalId, clientId, startDate, endDate }: ApplyButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pitch, setPitch] = useState("");
@@ -21,6 +23,15 @@ export function ApplyButton({ goalId, clientId }: ApplyButtonProps) {
   // Get assistantId from logged-in user
   const user = getUser();
   const assistantId = user?.id;
+
+  // Determine goal status based on dates
+  const now = new Date();
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+
+  const isExpired = end && now > end;
+  const isOngoing = start && end && now >= start && now <= end;
+  const canApply = !isExpired && !isOngoing;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,7 +122,7 @@ export function ApplyButton({ goalId, clientId }: ApplyButtonProps) {
               disabled={isLoading}
               className="flex-1 gap-2 rounded-xl bg-primary py-3 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {isLoading ? "Submitting..." : "Submit Applicationrr"}
+              {isLoading ? "Submitting..." : "Submit Application"}
             </Button>
           </div>
         </form>
@@ -121,13 +132,25 @@ export function ApplyButton({ goalId, clientId }: ApplyButtonProps) {
 
   return (
     <div className="mt-8 pb-8">
-      <Button
-        onClick={() => setShowForm(true)}
-        className="w-full gap-2 rounded-xl bg-primary py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90"
-      >
-        <Users className="h-5 w-5" />
-        Apply
-      </Button>
+      {isExpired ? (
+        <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-muted py-6 text-base font-semibold text-muted-foreground">
+          <XCircle className="h-5 w-5" />
+          Expired
+        </div>
+      ) : isOngoing ? (
+        <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500/20 py-6 text-base font-semibold text-amber-600">
+          <Clock className="h-5 w-5" />
+          Ongoing
+        </div>
+      ) : (
+        <Button
+          onClick={() => setShowForm(true)}
+          className="w-full gap-2 rounded-xl bg-primary py-6 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          <Users className="h-5 w-5" />
+          Apply
+        </Button>
+      )}
     </div>
   );
 }

@@ -284,10 +284,10 @@ export default function PostGoalPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-foreground">
-                      Financial Pledge
+                      Trust Score Pledge
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      This amount is held in escrow
+                      Points at stake for this goal
                     </p>
                   </div>
                   <button
@@ -308,18 +308,17 @@ export default function PostGoalPage() {
                 {hasPledge && (
                   <div className="mt-4">
                     <div className="flex items-center rounded-xl bg-input">
-                      <span className="px-4 text-muted-foreground">$</span>
                       <input
                         type="text"
                         value={pledgeAmount}
                         onChange={(e) => setPledgeAmount(e.target.value)}
-                        className="flex-1 bg-transparent py-3 pr-4 text-foreground focus:outline-none"
+                        className="flex-1 bg-transparent py-3 px-4 text-foreground focus:outline-none"
                       />
-                      <span className="px-4 text-muted-foreground">USD</span>
+                      <span className="px-4 text-muted-foreground">pts</span>
                     </div>
                     <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                      <span className="text-warning">*</span> You only pay if
-                      you miss your goal
+                      <span className="text-warning">*</span> Points earned by
+                      assistant on goal completion
                     </p>
                   </div>
                 )}

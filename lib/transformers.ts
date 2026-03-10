@@ -103,6 +103,8 @@ export interface FrontendGoal {
   status: "on-track" | "needs-action" | "paused" | "completed";
   progress?: number;
   checkedIn?: boolean;
+  startDate?: string;
+  endDate?: string;
 }
 
 export function transformGoalData(
@@ -136,6 +138,8 @@ export function transformGoalData(
     status,
     streak: 0, // Will be populated from trial/checkin data
     todayStatus: "Pending",
+    startDate: apiGoal.startDate,
+    endDate: apiGoal.endDate,
   };
 }
 
@@ -210,6 +214,8 @@ export interface HomeGoal {
   duration: string;
   category: string;
   categoryIcon: "fitness" | "career" | "language" | "business";
+  startDate?: string;
+  endDate?: string;
 }
 
 export function transformToHomeGoal(apiGoal: APIGoal): HomeGoal {
@@ -248,6 +254,8 @@ export function transformToHomeGoal(apiGoal: APIGoal): HomeGoal {
     duration: getDurationDisplay(apiGoal.startDate, apiGoal.endDate),
     category: category.charAt(0).toUpperCase() + category.slice(1),
     categoryIcon,
+    startDate: apiGoal.startDate,
+    endDate: apiGoal.endDate,
   };
 }
 

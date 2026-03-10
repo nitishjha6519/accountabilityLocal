@@ -6,9 +6,25 @@ import {
   Sliders,
   CheckCircle2,
   Calendar,
+  Clock,
+  XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+
+// Helper function to determine goal status
+function getGoalStatus(
+  startDate?: string,
+  endDate?: string,
+): "open" | "ongoing" | "expired" {
+  const now = new Date();
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+
+  if (end && now > end) return "expired";
+  if (start && end && now >= start && now <= end) return "ongoing";
+  return "open";
+}
 
 interface AvailableGoal {
   id: string;
@@ -24,6 +40,9 @@ interface AvailableGoal {
   description: string;
   tags: string[];
   category: "fitness" | "productivity" | "career";
+  startDate?: string;
+  endDate?: string;
+  status?: "accepted" | "pending" | "rejected"; // Added status property
 }
 
 interface GoalsTabAssistantProps {
@@ -57,6 +76,7 @@ export function GoalsTabAssistant({
       </div>
 
       {/* Assistant Stats Cards */}
+      {/*
       <div className="mb-6 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
@@ -71,6 +91,27 @@ export function GoalsTabAssistant({
           </div>
           <p className="text-xs text-muted-foreground">EARNINGS</p>
           <p className="mt-1 text-2xl font-bold text-foreground">$0.00</p>
+        </div>
+      </div>
+      */}
+      {/* Earnings section: show only accepted applications with end date passed */}
+      <div className="mb-6 grid grid-cols-1 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
+            <span className="text-sm text-success">★</span>
+          </div>
+          <p className="text-xs text-muted-foreground">EARNINGS</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">
+            {goals
+              .filter(
+                (goal) =>
+                  goal.status === "accepted" &&
+                  goal.endDate &&
+                  new Date(goal.endDate) < new Date(),
+              )
+              .reduce((sum, goal) => sum + (goal.reward || 0), 0)}{" "}
+            Trust pts
+          </p>
         </div>
       </div>
 
@@ -196,18 +237,39 @@ export function GoalsTabAssistant({
                     <Calendar className="h-4 w-4" />
                     {goal.duration}
                   </span>
-                  <span className="text-reward">${goal.reward} Reward</span>
+                  <span className="text-reward">{goal.reward} Trust pts</span>
                 </div>
               </div>
-              <Button
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => {
-                  router.push(`/goal/${goal.id}`);
-                }}
-              >
-                Apply
-              </Button>
+              {(() => {
+                const status = getGoalStatus(goal.startDate, goal.endDate);
+                if (status === "expired") {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                      <XCircle className="h-4 w-4" />
+                      Expired
+                    </span>
+                  );
+                }
+                if (status === "ongoing") {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1.5 text-sm font-medium text-amber-600">
+                      <Clock className="h-4 w-4" />
+                      Ongoing
+                    </span>
+                  );
+                }
+                return (
+                  <Button
+                    size="sm"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => {
+                      router.push(`/goal/${goal.id}`);
+                    }}
+                  >
+                    Apply
+                  </Button>
+                );
+              })()}
             </div>
           </div>
         ))}

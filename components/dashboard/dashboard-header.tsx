@@ -23,7 +23,10 @@ export function DashboardHeader({ role, onRoleChange }: DashboardHeaderProps) {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     }
@@ -58,8 +61,12 @@ export function DashboardHeader({ role, onRoleChange }: DashboardHeaderProps) {
             <div>
               <p className="text-sm text-muted-foreground">{getGreeting()}</p>
               <div className="flex items-center gap-1">
-                <h1 className="text-xl font-semibold text-foreground">{displayName}</h1>
-                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showDropdown ? "rotate-180" : ""}`} />
+                <h1 className="text-xl font-semibold text-foreground">
+                  {displayName}
+                </h1>
+                <ChevronDown
+                  className={`h-4 w-4 text-muted-foreground transition-transform ${showDropdown ? "rotate-180" : ""}`}
+                />
               </div>
             </div>
           </button>
@@ -69,7 +76,9 @@ export function DashboardHeader({ role, onRoleChange }: DashboardHeaderProps) {
             <div className="absolute left-0 top-full z-50 mt-2 w-56 rounded-lg border border-border bg-background shadow-lg">
               <div className="border-b border-border px-4 py-3">
                 <p className="font-medium text-foreground">{displayName}</p>
-                <p className="text-sm text-muted-foreground">{user?.email || "No email"}</p>
+                <p className="text-sm text-muted-foreground">
+                  {user?.email || "No email"}
+                </p>
               </div>
               <div className="py-1">
                 <Link
@@ -119,7 +128,7 @@ export function DashboardHeader({ role, onRoleChange }: DashboardHeaderProps) {
               : "text-muted-foreground"
           }`}
         >
-          Client
+          My goals
         </button>
         <button
           onClick={() => onRoleChange("assistant")}
@@ -129,7 +138,7 @@ export function DashboardHeader({ role, onRoleChange }: DashboardHeaderProps) {
               : "text-muted-foreground"
           }`}
         >
-          Assistant
+          I can help
         </button>
       </div>
     </header>

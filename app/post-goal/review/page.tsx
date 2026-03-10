@@ -190,28 +190,28 @@ export default function ReviewGoalPage() {
           </div>
         </section>
 
-        {/* Stakes */}
+        {/* Trust Score */}
         {goalData.hasPledge && (
           <section className="mt-6">
-            <h3 className="font-semibold text-foreground">Stakes</h3>
+            <h3 className="font-semibold text-foreground">Trust Score</h3>
             <div className="mt-3 rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    Commitment Pledge
+                    Trust Points at Stake
                   </p>
                   <p className="mt-1 text-2xl font-bold text-foreground">
-                    ${goalData.pledgeAmount}
+                    {goalData.pledgeAmount}
                     <span className="ml-1 text-sm font-normal text-muted-foreground">
-                      USD
+                      pts
                     </span>
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Released to assistant upon successful completion.
+                    Earned by assistant upon successful completion.
                   </p>
                 </div>
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                  <span className="text-xl text-primary">$</span>
+                  <span className="text-xl text-primary">★</span>
                 </div>
               </div>
             </div>

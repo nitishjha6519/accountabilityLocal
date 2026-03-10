@@ -55,7 +55,7 @@ export default function SignupPage() {
       const data = await apiPost<{
         access_token: string;
         user: { id: string; email: string; fullName: string; initials: string };
-      }>("/auth/register", { fullName, email, password });
+      }>("/users/signup", { fullName, email, password });
       saveAuth(data);
       // Check for redirect param and pendingGoal
       const redirect = searchParams.get("redirect");

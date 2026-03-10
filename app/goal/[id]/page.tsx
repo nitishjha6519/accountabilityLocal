@@ -5,7 +5,7 @@ import {
   Clock,
   Bell,
   Users,
-  DollarSign,
+  Star,
   Dumbbell,
   Briefcase,
   Languages,
@@ -70,7 +70,7 @@ export default async function GoalDetailsPage(props: any) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur">
         <div className="flex items-center justify-between px-4 py-3">
-          <Link href="/" className="text-foreground">
+          <Link href="/dashboard" className="text-foreground">
             <ChevronLeft className="h-6 w-6" />
           </Link>
           <h1 className="text-lg font-semibold text-foreground">
@@ -139,28 +139,36 @@ export default async function GoalDetailsPage(props: any) {
         </section>
 
         <section className="mt-6">
-          <h3 className="text-lg font-semibold text-foreground">Stakes</h3>
+          <h3 className="text-lg font-semibold text-foreground">Trust Score</h3>
           <div className="mt-3 flex items-center justify-between rounded-xl bg-card p-4">
             <div>
-              <p className="text-sm text-muted-foreground">Commitment Pledge</p>
+              <p className="text-sm text-muted-foreground">
+                Trust Points at Stake
+              </p>
               <p className="mt-1 text-3xl font-bold text-foreground">
-                ${safeGoal.reward.toFixed(2)}
+                {safeGoal.reward}
                 <span className="text-lg font-normal text-muted-foreground">
-                  USD{safeGoal.rewardFrequency}
+                  {" "}
+                  pts
                 </span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Released to assistant upon successful completion.
+                Earned by assistant upon successful completion.
               </p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent">
-              <DollarSign className="h-6 w-6 text-accent-foreground" />
+              <Star className="h-6 w-6 text-accent-foreground" />
             </div>
           </div>
         </section>
 
         <div className="mt-8 pb-8">
-          <ApplyButton goalId={id} clientId={goal.clientId} />
+          <ApplyButton
+            goalId={id}
+            clientId={goal.clientId}
+            startDate={goal.startDate}
+            endDate={goal.endDate}
+          />
         </div>
       </main>
     </div>

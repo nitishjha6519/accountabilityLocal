@@ -63,15 +63,31 @@ function getDaysProgress(trial: Trial): { completed: number; total: number } {
   return { completed: completedDays, total: totalDays };
 }
 
-export function TrialsTab({ trials, filter, onFilterChange, role }: TrialsTabProps) {
+export function TrialsTab({
+  trials,
+  filter,
+  onFilterChange,
+  role,
+}: TrialsTabProps) {
   console.log("TrialsTab: received trials:", trials);
   console.log("TrialsTab: filter:", filter);
-  
+
   // Filter trials based on date ranges
   const filteredTrials = trials.filter((trial) => {
     const active = isActive(trial);
     const history = isHistory(trial);
-    console.log("Trial:", trial.goalTitle, "startDate:", trial.startDate, "endDate:", trial.endDate, "isActive:", active, "isHistory:", history);
+    console.log(
+      "Trial:",
+      trial.goalTitle,
+      "startDate:",
+      trial.startDate,
+      "endDate:",
+      trial.endDate,
+      "isActive:",
+      active,
+      "isHistory:",
+      history,
+    );
     if (filter === "active") {
       return active;
     } else {
@@ -82,7 +98,12 @@ export function TrialsTab({ trials, filter, onFilterChange, role }: TrialsTabPro
   // Count for badges
   const activeCount = trials.filter(isActive).length;
   const historyCount = trials.filter(isHistory).length;
-  console.log("TrialsTab: activeCount:", activeCount, "historyCount:", historyCount);
+  console.log(
+    "TrialsTab: activeCount:",
+    activeCount,
+    "historyCount:",
+    historyCount,
+  );
 
   return (
     <>
@@ -146,18 +167,16 @@ export function TrialsTab({ trials, filter, onFilterChange, role }: TrialsTabPro
 
               <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
                 <span>
-                  {new Date(trial.startDate).toLocaleDateString(
-                    "en-US",
-                    {
-                      month: "short",
-                      day: "numeric",
-                    },
-                  )}
+                  {new Date(trial.startDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                   {" - "}
-                  {new Date(trial.endDate).toLocaleDateString(
-                    "en-US",
-                    { month: "short", day: "numeric", year: "numeric" },
-                  )}
+                  {new Date(trial.endDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </span>
                 <span className="text-primary">{trial.frequency}</span>
               </div>

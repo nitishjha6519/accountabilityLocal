@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Calendar, ArrowRight, Flame, Rocket, Check } from "lucide-react";
+import {
+  Calendar,
+  ArrowRight,
+  Flame,
+  Rocket,
+  Check,
+  Clock,
+  XCircle,
+} from "lucide-react";
 import { StatusBadge } from "./status-badge";
 
 interface GoalData {
@@ -16,29 +24,61 @@ interface GoalData {
   duration: string;
   reward?: number;
   status: "on-track" | "needs-action" | "paused" | "completed";
+  startDate?: string;
+  endDate?: string;
 }
 
 interface GoalsTabClientProps {
   goals: GoalData[];
 }
 
+// Helper function to determine goal status
+function getGoalStatus(
+  startDate?: string,
+  endDate?: string,
+): "open" | "ongoing" | "expired" {
+  const now = new Date();
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+
+  if (end && now > end) return "expired";
+  if (start && end && now >= start && now <= end) return "ongoing";
+  return "open";
+}
+
 export function GoalsTabClient({ goals }: GoalsTabClientProps) {
   console.log("goals", goals);
+
+  // Calculate stats from goals data based on date status
+  const activeGoals = goals.filter(
+    (g) => getGoalStatus(g.startDate, g.endDate) !== "expired",
+  ).length;
+  const expiredGoals = goals.filter(
+    (g) => getGoalStatus(g.startDate, g.endDate) === "expired",
+  ).length;
+  const totalStaked = goals.reduce((sum, g) => sum + (g.reward || 0), 0);
+
   return (
     <>
       {/* Stats Cards */}
       <div className="mb-6 grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-card p-3">
           <p className="text-xs text-muted-foreground">Active</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">3</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">
+            {activeGoals}
+          </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-3">
           <p className="text-xs text-muted-foreground">Completed</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">12</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">
+            {expiredGoals}
+          </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-3">
-          <p className="text-xs text-muted-foreground">Staked</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">$450</p>
+          <p className="text-xs text-muted-foreground">Trust pts</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">
+            {totalStaked}
+          </p>
         </div>
       </div>
 
@@ -121,12 +161,33 @@ export function GoalsTabClient({ goals }: GoalsTabClientProps) {
                 </span>
                 <span className="text-reward">${goal.reward} Reward</span>
               </div>
-              <Link
-                href={`/goal/${goal.id}`}
-                className="flex items-center gap-1 text-sm font-medium text-primary"
-              >
-                Details <ArrowRight className="h-4 w-4" />
-              </Link>
+              {(() => {
+                const status = getGoalStatus(goal.startDate, goal.endDate);
+                if (status === "expired") {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                      <XCircle className="h-4 w-4" />
+                      Expired
+                    </span>
+                  );
+                }
+                if (status === "ongoing") {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1.5 text-sm font-medium text-amber-600">
+                      <Clock className="h-4 w-4" />
+                      Ongoing
+                    </span>
+                  );
+                }
+                return (
+                  <Link
+                    href={`/goal/${goal.id}`}
+                    className="flex items-center gap-1 text-sm font-medium text-primary"
+                  >
+                    Details <ArrowRight className="h-4 w-4" />
+                  </Link>
+                );
+              })()}
             </div>
           </div>
         ))}

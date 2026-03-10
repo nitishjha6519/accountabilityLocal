@@ -12,7 +12,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { fetchApplicationById, submitFeedbackAsClient, submitFeedbackAsAssistant, FeedbackPayload } from "@/lib/api";
+import {
+  fetchApplicationById,
+  submitFeedbackAsClient,
+  submitFeedbackAsAssistant,
+  FeedbackPayload,
+} from "@/lib/api";
 import { getUser } from "@/lib/auth";
 
 interface TrialData {
@@ -67,7 +72,9 @@ export default function CheckinPage() {
         const isClient = roleParam
           ? roleParam === "client"
           : user.id ===
-            (typeof app.clientId === "object" ? app.clientId._id : app.clientId);
+            (typeof app.clientId === "object"
+              ? app.clientId._id
+              : app.clientId);
         setUserIsClient(isClient);
         const goal = typeof app.goalId === "object" ? app.goalId : null;
 
@@ -167,7 +174,7 @@ export default function CheckinPage() {
         stars: rating || 0,
         comment: feedback || "",
       };
-      
+
       // Use appropriate endpoint based on role
       if (userIsClient) {
         await submitFeedbackAsClient(feedbackData);

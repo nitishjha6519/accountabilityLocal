@@ -43,6 +43,7 @@ export function ApplicationsTabAssistant({
   return (
     <>
       {/* Assistant Stats Cards */}
+      {/*
       <div className="mb-6 grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
@@ -72,6 +73,7 @@ export function ApplicationsTabAssistant({
           </p>
         </div>
       </div>
+      */}
 
       {/* Filter Tabs for Assistant */}
       <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -128,7 +130,7 @@ export function ApplicationsTabAssistant({
                   <Clock className="h-4 w-4" />
                   Applied {app.appliedTime}
                 </span>
-                <span className="text-reward">${app.reward} Reward</span>
+                <span className="text-reward">{app.reward} Trust pts</span>
               </div>
 
               <div className="mt-4">

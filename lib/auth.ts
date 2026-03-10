@@ -66,20 +66,10 @@ export function getAuth(): AuthData | null {
 }
 
 export function getToken(): string | null {
-  const token = getAuth()?.access_token ?? null;
-  if (token && isTokenExpired(token)) {
-    clearAuth(); // Clear expired token
-    return null;
-  }
-  return token;
+  return getAuth()?.access_token ?? null;
 }
 
 export function getUser(): AuthUser | null {
-  const token = getAuth()?.access_token;
-  if (token && isTokenExpired(token)) {
-    clearAuth();
-    return null;
-  }
   return getAuth()?.user ?? null;
 }
 

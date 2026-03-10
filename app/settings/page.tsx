@@ -1,25 +1,22 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import {
-  ChevronLeft,
-  LogOut,
-} from "lucide-react"
-import { clearAuth, getUser } from "@/lib/auth"
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, LogOut } from "lucide-react";
+import { clearAuth, getUser } from "@/lib/auth";
 
 export default function SettingsPage() {
-  const router = useRouter()
-  const user = getUser()
+  const router = useRouter();
+  const user = getUser();
 
-  const displayName = user?.fullName || "Guest"
-  const displayEmail = user?.email || "No email"
-  const displayInitials = user?.initials || "?"
+  const displayName = user?.fullName || "Guest";
+  const displayEmail = user?.email || "No email";
+  const displayInitials = user?.initials || "?";
 
   const handleLogout = () => {
-    clearAuth()
-    router.push("/login")
-  }
+    clearAuth();
+    router.push("/login");
+  };
 
   return (
     <div className="min-h-screen bg-background pb-12">
@@ -37,7 +34,9 @@ export default function SettingsPage() {
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
           {displayInitials}
         </div>
-        <h2 className="mt-4 text-xl font-bold text-foreground">{displayName}</h2>
+        <h2 className="mt-4 text-xl font-bold text-foreground">
+          {displayName}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">{displayEmail}</p>
       </div>
 
@@ -57,5 +56,5 @@ export default function SettingsPage() {
         Accountability App - Version 2.1.0
       </p>
     </div>
-  )
+  );
 }

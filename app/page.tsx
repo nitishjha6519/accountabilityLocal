@@ -18,7 +18,12 @@ export default function Home() {
     async function loadGoals() {
       try {
         const apiGoals = await fetchAvailableGoals();
-        const transformed = transformHomeGoals(apiGoals);
+        // Sort by newest first (descending by createdAt)
+        const sortedGoals = [...(apiGoals || [])].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        const transformed = transformHomeGoals(sortedGoals);
         setGoals(transformed);
       } catch (error) {
         console.error("Failed to fetch goals:", error);

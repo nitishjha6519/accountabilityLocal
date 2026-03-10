@@ -138,7 +138,7 @@ export function ApplicationsTabClient({
                     Applied {applicant.appliedTime}
                   </span>
                   <span className="text-reward">
-                    ${applicant.reward} Reward
+                    {applicant.reward} Trust pts
                   </span>
                 </div>
                 <Link
