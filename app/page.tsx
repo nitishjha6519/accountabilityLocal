@@ -55,9 +55,9 @@ export default function Home() {
                 Recent Requests
                 <span className="h-2 w-2 rounded-full bg-primary" />
               </h2>
-              <button className="text-sm font-medium text-primary hover:underline">
+              {/* <button className="text-sm font-medium text-primary hover:underline">
                 View all
-              </button>
+              </button> */}
             </div>
 
             {isLoading ? (

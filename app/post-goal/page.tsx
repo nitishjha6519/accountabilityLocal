@@ -121,6 +121,21 @@ export default function PostGoalPage() {
 
               <div>
                 <label className="text-sm font-medium text-foreground">
+                  Category
+                </label>
+                <select
+                  className="mt-2 w-full rounded-xl bg-input px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  defaultValue="Fitness"
+                  // You may want to add a state for category if you want to use it elsewhere
+                >
+                  <option value="Fitness">Fitness</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Speaking">Speaking</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground">
                   Why is this important?
                 </label>
                 <textarea
