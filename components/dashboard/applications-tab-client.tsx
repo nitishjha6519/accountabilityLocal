@@ -15,6 +15,7 @@ interface Applicant {
   reward: number;
   goalTitle: string;
   status: "pending" | "accepted" | "rejected";
+  assistantId: string;
 }
 
 interface ApplicationsTabClientProps {
@@ -100,7 +101,7 @@ export function ApplicationsTabClient({
               </div>
               <div className="flex items-start gap-3">
                 <Link
-                  href={`/assistant-profile/${applicant.id}`}
+                  href={`/assistant-profile/${applicant.assistantId}`}
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white transition-opacity hover:opacity-80"
                   style={{ backgroundColor: applicant.avatarColor }}
                 >
@@ -108,7 +109,7 @@ export function ApplicationsTabClient({
                 </Link>
                 <div className="flex-1">
                   <Link
-                    href={`/assistant-profile/${applicant.id}`}
+                    href={`/assistant-profile/${applicant.assistantId}`}
                     className="hover:underline"
                   >
                     <h3 className="font-semibold text-foreground">
@@ -141,12 +142,14 @@ export function ApplicationsTabClient({
                     {applicant.reward} Trust pts
                   </span>
                 </div>
-                <Link
-                  href={`/applicant/${applicant.id}`}
-                  className="flex items-center gap-1 text-sm font-medium text-primary"
-                >
-                  Details <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/applicant/${applicant.assistantId}`}
+                    className="flex items-center gap-1 text-sm font-medium text-primary"
+                  >
+                    Details <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))

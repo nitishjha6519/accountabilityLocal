@@ -384,6 +384,7 @@ export interface ReceivedApplicant {
   reward: number;
   goalTitle: string;
   status: "pending" | "accepted" | "rejected";
+  assistantId: string;
 }
 
 export function transformToReceivedApplicant(
@@ -427,6 +428,7 @@ export function transformToReceivedApplicant(
     reward: goal?.rewardAmount || goal?.pledgeAmount || 0,
     goalTitle,
     status: apiApp.status,
+    assistantId: assistantIdStr,
   };
 }
 
@@ -439,6 +441,7 @@ export function transformReceivedApplicants(
 // Trial interface matching trials-tab.tsx
 export interface Trial {
   id: string;
+  assistantId: string;
   goalTitle: string;
   partnerName: string;
   partnerInitials: string;
@@ -522,6 +525,7 @@ export function transformToTrials(
 
     return {
       id: apiApp._id,
+      assistantId: assistantIdStr,
       goalTitle: goal?.title || "Goal",
       partnerName,
       partnerInitials,

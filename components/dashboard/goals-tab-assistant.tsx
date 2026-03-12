@@ -59,11 +59,9 @@ export function GoalsTabAssistant({
   onFilterChange,
 }: GoalsTabAssistantProps) {
   const router = useRouter();
-  console.log("goalsgoals", goals);
   const filteredGoals = goals.filter(
     (goal) => filter === "all" || goal.category === filter,
   );
-  console.log("filteredGoals", filteredGoals);
   return (
     <>
       {/* Discover Hero */}

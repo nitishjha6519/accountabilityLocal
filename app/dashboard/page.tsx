@@ -86,7 +86,6 @@ const availableGoals = [
 ];
 
 export default function DashboardPage() {
-  console.log("DashboardPage: RENDERING");
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasInitialized = useRef(false);
@@ -131,7 +130,6 @@ export default function DashboardPage() {
       try {
         setLoadingGoals(true);
         const apiGoals = await fetchUserGoals();
-        console.log("useEffect: user goals fetched:", apiGoals.length);
         const transformed = transformGoalsData(apiGoals);
         setUserGoalsData(transformed);
       } catch (err) {
@@ -150,11 +148,17 @@ export default function DashboardPage() {
         const goals = await fetchAvailableGoals();
         // Sort by newest first (descending by createdAt)
         const sortedGoals = [...(goals || [])].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         const transformed = transformGoalsData(sortedGoals);
         setAvailableGoalsData(transformed || []);
-        console.log("useEffect: available goals fetched:", goals?.length || 0);
+
+        console.log(
+          "useEffect: available goals fetched>>>>>>>>>>>>>>>>>>>>:",
+          transformed,
+          goals?.length || 0,
+        );
 
         // // Filter out user's own goals (those with clientId matching current user)
         // const currentUserId = getCurrentClientId();
@@ -186,8 +190,9 @@ export default function DashboardPage() {
         const transformed = transformSubmittedApplications(apps);
         setSubmittedApplications(transformed);
         console.log(
-          "useEffect: assistant applications fetched:",
+          "useEffect: assistant applications fetched>>>>>>>>>>>>:",
           apps?.length || 0,
+          transformed,
         );
       } catch (err) {
         console.error("Failed to fetch applications:", err);
@@ -206,11 +211,8 @@ export default function DashboardPage() {
       try {
         const apps = await fetchApplicationsByClient(user.id);
         const transformed = transformReceivedApplicants(apps);
+
         setReceivedApplicants(transformed);
-        console.log(
-          "useEffect: client received applications fetched:",
-          apps?.length || 0,
-        );
       } catch (err) {
         console.error("Failed to fetch received applications:", err);
       }
@@ -231,12 +233,8 @@ export default function DashboardPage() {
             ? await fetchApplicationsByClient(user.id)
             : await fetchApplicationsByAssistant(user.id);
 
-        console.log("Trials: fetched apps:", apps?.length, apps);
-        console.log("Trials: accepted apps:", apps?.filter((a: any) => a.status === "accepted"));
-
         // Transform to trials (filters only accepted applications internally)
         const transformedTrials = transformToTrials(apps, role);
-        console.log("Trials: transformed:", transformedTrials);
         setTrials(transformedTrials);
       } catch (err) {
         console.error("Failed to fetch trials:", err);

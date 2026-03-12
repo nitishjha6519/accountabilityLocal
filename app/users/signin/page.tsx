@@ -19,6 +19,15 @@ import { login } from "@/lib/auth";
 
 export default function SignInPage() {
   const router = useRouter();
+  // Get redirect param from URL
+  let redirectUrl = "/dashboard?role=client&tab=goals";
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get("redirect");
+    if (redirectParam) {
+      redirectUrl = redirectParam;
+    }
+  }
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +40,7 @@ export default function SignInPage() {
     setError("");
     try {
       await login(email, password);
-      router.push("/dashboard?role=client&tab=goals");
+      router.push(redirectUrl);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid email or password",

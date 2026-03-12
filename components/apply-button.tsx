@@ -37,7 +37,7 @@ export function ApplyButton({ goalId, clientId, startDate, endDate }: ApplyButto
     e.preventDefault();
 
     if (!assistantId) {
-      window.location.href = `/login?redirect=/goal/${goalId}`;
+      window.location.href = `/users/signin?redirect=/goal/${goalId}`;
       return;
     }
 

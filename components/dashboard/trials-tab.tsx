@@ -11,6 +11,7 @@ interface Trial {
   startDate: string;
   endDate: string;
   frequency: "Daily" | "3x Weekly";
+  status?: "pending" | "accepted" | "rejected";
 }
 
 interface TrialsTabProps {
@@ -69,25 +70,13 @@ export function TrialsTab({
   onFilterChange,
   role,
 }: TrialsTabProps) {
-  console.log("TrialsTab: received trials:", trials);
-  console.log("TrialsTab: filter:", filter);
+  // Only show trials with status 'accepted'
+  // const acceptedTrials = trials.filter((trial) => trial.status === "accepted");
 
-  // Filter trials based on date ranges
+  // Filter trials based on date range
   const filteredTrials = trials.filter((trial) => {
     const active = isActive(trial);
     const history = isHistory(trial);
-    console.log(
-      "Trial:",
-      trial.goalTitle,
-      "startDate:",
-      trial.startDate,
-      "endDate:",
-      trial.endDate,
-      "isActive:",
-      active,
-      "isHistory:",
-      history,
-    );
     if (filter === "active") {
       return active;
     } else {

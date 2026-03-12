@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 export default function PostGoalPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("Fitness");
   const [motivation, setMotivation] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -70,6 +71,7 @@ export default function PostGoalPage() {
       checkInFrequency === "custom" ? customCheckInFrequency : checkInFrequency;
     const goalData = {
       title,
+      category,
       motivation,
       startDate,
       endDate,
@@ -125,8 +127,8 @@ export default function PostGoalPage() {
                 </label>
                 <select
                   className="mt-2 w-full rounded-xl bg-input px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  defaultValue="Fitness"
-                  // You may want to add a state for category if you want to use it elsewhere
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                 >
                   <option value="Fitness">Fitness</option>
                   <option value="Interview">Interview</option>

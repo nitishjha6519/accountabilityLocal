@@ -17,6 +17,7 @@ import { getUser } from "@/lib/auth";
 
 interface GoalData {
   title: string;
+  category: string;
   motivation: string;
   startDate: string;
   endDate: string;
@@ -54,6 +55,7 @@ export default function ReviewGoalPage() {
     try {
       await apiPost("/goals/create", {
         title: goalData.title,
+        category: goalData.category,
         description: goalData.motivation,
         startDate: goalData.startDate,
         endDate: goalData.endDate,
