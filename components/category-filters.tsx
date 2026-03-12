@@ -1,12 +1,16 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-const categories = ["Fitness", "Interview", "Speaking"]
+const categories = ["Fitness", "Interview", "Speaking"];
 
-export function CategoryFilters() {
-  const [active, setActive] = useState("All")
-
+export function CategoryFilters({
+  active,
+  setActive,
+}: {
+  active: string;
+  setActive: (cat: string) => void;
+}) {
   return (
     <div className="py-4">
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide lg:flex-wrap lg:overflow-visible lg:pb-0">
@@ -25,5 +29,5 @@ export function CategoryFilters() {
         ))}
       </div>
     </div>
-  )
+  );
 }

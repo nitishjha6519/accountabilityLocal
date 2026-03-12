@@ -13,6 +13,7 @@ import { transformHomeGoals, HomeGoal } from "@/lib/transformers";
 export default function Home() {
   const [goals, setGoals] = useState<HomeGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
 
   useEffect(() => {
     async function loadGoals() {
@@ -43,7 +44,10 @@ export default function Home() {
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           <aside className="lg:sticky lg:top-4 lg:w-72 lg:shrink-0">
             <SearchBar />
-            <CategoryFilters />
+            <CategoryFilters
+              active={activeCategory}
+              setActive={setActiveCategory}
+            />
             <div className="hidden lg:block">
               <PostGoalButton />
             </div>
@@ -70,9 +74,16 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {goals.map((goal) => (
-                  <GoalCard key={goal.id} {...goal} />
-                ))}
+                {goals
+                  .filter(
+                    (goal) =>
+                      activeCategory === "All" ||
+                      goal.category.toLowerCase() ===
+                        activeCategory.toLowerCase(),
+                  )
+                  .map((goal) => (
+                    <GoalCard key={goal.id} {...goal} />
+                  ))}
               </div>
             )}
           </section>
