@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, Moon, Sun } from "lucide-react";
+import { TitanEyesLogo } from "./TitanEyesLogo";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 
@@ -16,10 +17,13 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-            <CheckCircle2 className="h-5 w-5 text-primary-foreground" />
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: "#B37346" }}
+          >
+            <TitanEyesLogo width="24" height="24" />
           </div>
-          <span className="text-lg font-semibold text-foreground">repmate</span>
+          <span className="text-lg font-semibold text-foreground">erenmax</span>
         </Link>
         <div className="flex items-center gap-2">
           <Button

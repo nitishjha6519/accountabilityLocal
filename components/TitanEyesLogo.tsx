@@ -1,0 +1,28 @@
+// TitanEyesLogo.tsx
+import React from "react";
+
+export const TitanEyesLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width={props.width || "32px"} height={props.height || "32px"} {...props}>
+    <defs>
+      <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="4" dy="6" stdDeviation="3" floodColor="#000000" floodOpacity="0.35"/>
+      </filter>
+    </defs>
+    <rect width="400" height="500" fill="#B37346"/>
+    <path d="M 60,60 L 340,60 L 340,360 L 200,460 L 60,360 Z" fill="#382012" stroke="#1A1A1A" strokeWidth="4" strokeLinejoin="round"/>
+    <path d="M 68,68 L 332,68 L 332,354 L 200,448 L 68,354 Z" fill="#F4F4F4" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    <path d="M 78,78 L 192,78 L 192,205 L 78,205 Z" fill="#999999" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    <path d="M 208,78 L 322,78 L 322,205 L 208,205 Z" fill="#999999" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    <path d="M 78,217 L 192,217 L 192,437 L 78,358 Z" fill="#999999" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    <path d="M 208,217 L 322,217 L 322,358 L 208,437 Z" fill="#999999" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    <g filter="url(#shadow)">
+      <path d="M 200,380 L 265,445 L 245,390 Z" fill="#2756A8" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+      <path d="M 200,380 L 135,445 L 155,390 Z" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+      <path d="M 205,370 L 160,380 L 170,340 L 115,340 L 155,300 L 90,290 L 145,250 L 80,230 L 140,200 L 75,170 L 140,150 L 85,110 L 150,110 L 115,60 L 165,80 L 150,30 L 195,85 Q 185,200 205,370 Z" fill="#2756A8" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+      <path d="M 170,340 L 195,330 M 155,300 L 190,290 M 145,250 L 187,245 M 140,200 L 185,200 M 140,150 L 185,160 M 150,110 L 187,120 M 165,80 L 190,95" fill="none" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M 195,370 L 240,380 L 230,340 L 285,340 L 245,300 L 310,290 L 255,250 L 320,230 L 260,200 L 325,170 L 260,150 L 315,110 L 250,110 L 285,60 L 235,80 L 250,30 L 205,85 Q 215,200 195,370 Z" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+      <path d="M 230,340 L 205,330 M 245,300 L 210,290 M 255,250 L 213,245 M 260,200 L 215,200 M 260,150 L 215,160 M 250,110 L 213,120 M 235,80 L 210,95" fill="none" stroke="#1A1A1A" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M 205,370 L 160,380 L 170,340 L 195,350 Q 195,360 205,370 Z" fill="#2756A8" stroke="#1A1A1A" strokeWidth="3" strokeLinejoin="round"/>
+    </g>
+  </svg>
+);
