@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { apiGet } from "@/lib/api";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
@@ -16,8 +17,7 @@ export default function AssistantProfilePage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:3001/users/profile/${id}`)
-      .then((res) => res.json())
+    apiGet(`/users/profile/${id}`)
       .then((data) => {
         setProfile(data);
         setLoading(false);
