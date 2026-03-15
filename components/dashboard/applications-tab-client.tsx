@@ -52,7 +52,7 @@ export function ApplicationsTabClient({
   const rejectedCount = applicants.filter(
     (a) => a.status === "rejected",
   ).length;
-
+  console.log("applicantsapplicants", applicants);
   return (
     <>
       {/* Application Filters */}
@@ -144,7 +144,7 @@ export function ApplicationsTabClient({
                 </div>
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/applicant/${applicant.assistantId}`}
+                    href={`/details/${applicant.id}`}
                     className="flex items-center gap-1 text-sm font-medium text-primary"
                   >
                     Details <ArrowRight className="h-4 w-4" />

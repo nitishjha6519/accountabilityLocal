@@ -99,7 +99,7 @@ export async function fetchAvailableGoals() {
 }
 
 export async function fetchGoalById(id: string) {
-  return apiGet(`/goals/${id}`);
+  return apiGet(`/goals/goalsid/${id}`);
 }
 
 export async function createGoal(data: Record<string, unknown>) {
@@ -154,12 +154,18 @@ export interface FeedbackPayload {
 
 // Submit feedback as client
 export async function submitFeedbackAsClient(data: FeedbackPayload) {
-  return apiPost("/feedback/client", data as unknown as Record<string, unknown>);
+  return apiPost(
+    "/feedback/client",
+    data as unknown as Record<string, unknown>,
+  );
 }
 
 // Submit feedback as assistant
 export async function submitFeedbackAsAssistant(data: FeedbackPayload) {
-  return apiPost("/feedback/assistant", data as unknown as Record<string, unknown>);
+  return apiPost(
+    "/feedback/assistant",
+    data as unknown as Record<string, unknown>,
+  );
 }
 
 // Fetch feedback for an application

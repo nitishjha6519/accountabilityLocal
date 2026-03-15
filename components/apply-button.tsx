@@ -13,7 +13,12 @@ interface ApplyButtonProps {
   endDate?: string;
 }
 
-export function ApplyButton({ goalId, clientId, startDate, endDate }: ApplyButtonProps) {
+export function ApplyButton({
+  goalId,
+  clientId,
+  startDate,
+  endDate,
+}: ApplyButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pitch, setPitch] = useState("");

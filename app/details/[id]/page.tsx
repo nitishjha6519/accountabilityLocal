@@ -144,7 +144,7 @@ export default function ApplicantDetailsPage() {
             <ChevronLeft className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-semibold text-foreground">
-            Applicant Details
+            Application Details
           </h1>
           <div className="w-6" />
         </div>
@@ -167,11 +167,7 @@ export default function ApplicantDetailsPage() {
           </div>
         </div>
 
-        {/* Applying For */}
         <section className="mt-6">
-          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-            Applying For
-          </h3>
           <div className="mt-2 rounded-xl bg-primary/10 p-4">
             <Link
               href={`/goal/${application.goalId._id}`}
@@ -221,16 +217,6 @@ export default function ApplicantDetailsPage() {
         {/* Action Buttons - only show for pending applications */}
         {application.status === "pending" && (
           <>
-            <div className="mt-8 flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 gap-2 border-muted-foreground/30 bg-transparent py-6"
-              >
-                <MessageSquare className="h-5 w-5" />
-                Message
-              </Button>
-            </div>
-
             <div className="mt-4 flex gap-3 pb-8">
               <Button
                 variant="outline"

@@ -17,6 +17,7 @@ import {
   ReceivedApplicant,
   transformToTrials,
   Trial,
+  transformAvailableGoals,
 } from "@/lib/transformers";
 import { getUser, isLoggedIn } from "@/lib/auth";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
@@ -151,7 +152,7 @@ export default function DashboardPage() {
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
-        const transformed = transformGoalsData(sortedGoals);
+        const transformed = transformAvailableGoals(sortedGoals);
         setAvailableGoalsData(transformed || []);
 
         console.log(

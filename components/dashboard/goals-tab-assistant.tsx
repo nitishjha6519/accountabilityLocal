@@ -28,6 +28,7 @@ function getGoalStatus(
 
 interface AvailableGoal {
   id: string;
+  clientId: string;
   title: string;
   clientName: string;
   clientInitials: string;
@@ -42,7 +43,7 @@ interface AvailableGoal {
   category: "fitness" | "productivity" | "career";
   startDate?: string;
   endDate?: string;
-  status?: "accepted" | "pending" | "rejected"; // Added status property
+  status?: "accepted" | "pending" | "rejected";
 }
 
 interface GoalsTabAssistantProps {
@@ -173,12 +174,18 @@ export function GoalsTabAssistant({
         {filteredGoals.map((goal) => (
           <div key={goal.id} className="rounded-2xl bg-card p-4">
             <div className="flex items-start gap-3">
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
-                style={{ backgroundColor: goal.avatarColor }}
+              <Link
+                href={`/client-profile/${goal.clientId}`}
+                className="hover:underline"
               >
-                {goal.clientInitials ?? "??"}
-              </div>
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: goal.avatarColor }}
+                >
+                  {goal.clientInitials}
+                </div>
+              </Link>
+
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div>
@@ -186,9 +193,13 @@ export function GoalsTabAssistant({
                       {goal.title}
                     </h3>
                     <div className="flex items-center gap-1 text-sm">
-                      <span className="text-muted-foreground">
-                        {goal.clientName}
-                      </span>
+                      <Link
+                        href={`/client-profile/${goal.clientId}`}
+                        className="text-sm text-muted-foreground hover:underline"
+                      >
+                        by {goal.clientName}
+                      </Link>
+
                       {goal.verified && (
                         <span className="flex items-center gap-0.5 text-primary">
                           • <CheckCircle2 className="h-3.5 w-3.5" /> Verified

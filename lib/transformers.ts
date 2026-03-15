@@ -156,6 +156,7 @@ export function transformGoalsData(
 // Transform API goals to AvailableGoal format for assistant view
 export interface AvailableGoal {
   id: string;
+  clientId: string;
   title: string;
   clientName: string;
   clientInitials: string;
@@ -182,6 +183,7 @@ export function transformToAvailableGoal(apiGoal: APIGoal): AvailableGoal {
 
   return {
     id: apiGoal._id,
+    clientId: apiGoal.clientId,
     title: apiGoal.title,
     clientName,
     clientInitials: initials || "CL",
@@ -309,6 +311,7 @@ export interface APIApplication {
 export interface SubmittedApplication {
   id: string;
   goalId: string;
+  clientId: string;
   goalTitle: string;
   clientName: string;
   clientInitials: string;
@@ -354,6 +357,7 @@ export function transformToSubmittedApplication(
   return {
     id: apiApp._id,
     goalId: goalIdStr,
+    clientId: clientIdStr,
     goalTitle,
     clientName,
     clientInitials,
@@ -374,6 +378,7 @@ export function transformSubmittedApplications(
 export interface ReceivedApplicant {
   id: string;
   goalId: string;
+  clientId: string;
   name: string;
   initials: string;
   avatarColor: string;
@@ -394,6 +399,17 @@ export function transformToReceivedApplicant(
   const goal = typeof apiApp.goalId === "object" ? apiApp.goalId : null;
   const goalIdStr =
     typeof apiApp.goalId === "object" ? apiApp.goalId._id : apiApp.goalId;
+
+  // Handle clientId - could be object, string, null, or on the goal
+  const client =
+    typeof apiApp.clientId === "object" && apiApp.clientId
+      ? apiApp.clientId
+      : null;
+  const clientIdStr = client
+    ? client._id
+    : typeof apiApp.clientId === "string"
+      ? apiApp.clientId
+      : goal?.clientId || "";
 
   // Handle assistantId as either string or populated object
   const assistant =
@@ -418,6 +434,7 @@ export function transformToReceivedApplicant(
   return {
     id: apiApp._id,
     goalId: goalIdStr,
+    clientId: clientIdStr,
     name: assistantName,
     initials,
     avatarColor: generateColorFromString(assistantIdStr),

@@ -26,9 +26,11 @@ const iconMap = {
 };
 
 export default async function GoalDetailsPage(props: any) {
-  // Unwrap params - can be Promise or direct object
+  // Unwrap params and searchParams
   const params = await Promise.resolve(props.params);
+  const searchParams = await Promise.resolve(props.searchParams);
   const id = params.id;
+  const hideApply = searchParams?.applied === "true";
   // Fetch goal data using API utility
   let goal: any = null;
   try {
@@ -162,14 +164,16 @@ export default async function GoalDetailsPage(props: any) {
           </div>
         </section>
 
-        <div className="mt-8 pb-8">
-          <ApplyButton
-            goalId={id}
-            clientId={goal.clientId}
-            startDate={goal.startDate}
-            endDate={goal.endDate}
-          />
-        </div>
+        {!hideApply && (
+          <div className="mt-8 pb-8">
+            <ApplyButton
+              goalId={id}
+              clientId={goal.clientId}
+              startDate={goal.startDate}
+              endDate={goal.endDate}
+            />
+          </div>
+        )}
       </main>
     </div>
   );

@@ -3,6 +3,7 @@ export interface AuthUser {
   email: string;
   fullName: string;
   initials: string;
+  about?: string;
 }
 
 interface AuthData {

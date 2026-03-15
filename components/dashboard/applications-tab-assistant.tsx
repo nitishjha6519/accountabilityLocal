@@ -6,10 +6,12 @@ interface SubmittedApplication {
   id: string;
   goalTitle: string;
   clientName: string;
+  clientId: string;
   clientInitials: string;
   avatarColor: string;
   reward: number;
   appliedTime: string;
+  goalId: string;
   status: "pending" | "accepted" | "rejected";
 }
 
@@ -42,39 +44,6 @@ export function ApplicationsTabAssistant({
 
   return (
     <>
-      {/* Assistant Stats Cards */}
-      {/*
-      <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
-            <span className="text-sm text-success">$</span>
-          </div>
-          <p className="text-xs text-muted-foreground">Earnings</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">
-            ${totalEarnings}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
-            <Users className="h-4 w-4 text-primary" />
-          </div>
-          <p className="text-xs text-muted-foreground">Active Clients</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">
-            {acceptedCount}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-success/20">
-            <Check className="h-4 w-4 text-success" />
-          </div>
-          <p className="text-xs text-muted-foreground">Total Apps</p>
-          <p className="mt-1 text-2xl font-bold text-foreground">
-            {submittedApplications.length}
-          </p>
-        </div>
-      </div>
-      */}
-
       {/* Filter Tabs for Assistant */}
       <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {(["pending", "accepted", "rejected"] as const).map((cat) => (
@@ -107,19 +76,27 @@ export function ApplicationsTabAssistant({
             <div key={app.id} className="rounded-2xl bg-card p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
-                    style={{ backgroundColor: app.avatarColor }}
+                  <Link
+                    href={`/client-profile/${app.clientId}`}
+                    className="hover:underline"
                   >
-                    {app.clientInitials}
-                  </div>
+                    <div
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-medium text-white"
+                      style={{ backgroundColor: app.avatarColor }}
+                    >
+                      {app.clientInitials}
+                    </div>
+                  </Link>
                   <div>
                     <h3 className="font-semibold text-foreground">
                       {app.goalTitle}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <Link
+                      href={`/client-profile/${app.clientId}`}
+                      className="text-sm text-muted-foreground hover:underline"
+                    >
                       by {app.clientName}
-                    </p>
+                    </Link>
                   </div>
                 </div>
                 <StatusBadge status={app.status} />
@@ -135,7 +112,7 @@ export function ApplicationsTabAssistant({
 
               <div className="mt-4">
                 <Link
-                  href={`/goal/${app.id}`}
+                  href={`/goal/${app.goalId}?applied=true`}
                   className="flex items-center gap-1 text-sm font-medium text-primary"
                 >
                   View Details <ArrowRight className="h-4 w-4" />
