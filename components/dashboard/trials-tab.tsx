@@ -12,6 +12,7 @@ interface Trial {
   endDate: string;
   frequency: "Daily" | "3x Weekly";
   status?: "pending" | "accepted" | "rejected";
+  goalStatus?: string;
 }
 
 interface TrialsTabProps {
@@ -21,7 +22,20 @@ interface TrialsTabProps {
   role: "client" | "assistant";
 }
 
-function isActive(trial: Trial): boolean {
+// Status-based check: trial is active if goal status indicates it
+function isActiveByStatus(trial: Trial): boolean {
+  const status = trial.goalStatus?.toLowerCase() || "";
+  return ["posted", "matched"].includes(status);
+}
+
+// Status-based check: trial is completed/history
+function isCompletedByStatus(trial: Trial): boolean {
+  const status = trial.goalStatus?.toLowerCase() || "";
+  return ["completed", "paused"].includes(status);
+}
+
+// Date-based check: trial is currently within date range
+function isActiveByDate(trial: Trial): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const start = new Date(trial.startDate);
@@ -31,12 +45,25 @@ function isActive(trial: Trial): boolean {
   return today >= start && today <= end;
 }
 
-function isHistory(trial: Trial): boolean {
+// Date-based check: trial end date has passed
+function isHistoryByDate(trial: Trial): boolean {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const end = new Date(trial.endDate);
   end.setHours(23, 59, 59, 999);
   return today > end;
+}
+
+// Combined: active if status says active, or fallback to date check
+function isActive(trial: Trial): boolean {
+  if (trial.goalStatus) return isActiveByStatus(trial);
+  return isActiveByDate(trial);
+}
+
+// Combined: history if status says completed, or fallback to date check
+function isHistory(trial: Trial): boolean {
+  if (trial.goalStatus) return isCompletedByStatus(trial);
+  return isHistoryByDate(trial);
 }
 
 function getDaysProgress(trial: Trial): { completed: number; total: number } {

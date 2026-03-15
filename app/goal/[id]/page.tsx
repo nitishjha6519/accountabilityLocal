@@ -1,3 +1,7 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   Pencil,
@@ -9,14 +13,13 @@ import {
   Dumbbell,
   Briefcase,
   Languages,
+  Video,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { fetchGoalById } from "@/lib/api";
 import { getDurationDisplay } from "@/lib/transformers";
 import { ApplyButton } from "@/components/apply-button";
-
-// Disable caching to always fetch fresh data
-export const dynamic = "force-dynamic";
 
 const iconMap = {
   fitness: Dumbbell,
@@ -25,32 +28,39 @@ const iconMap = {
   business: Briefcase,
 };
 
-export default async function GoalDetailsPage(props: any) {
-  // Unwrap params and searchParams
-  const params = await Promise.resolve(props.params);
-  const searchParams = await Promise.resolve(props.searchParams);
-  const id = params.id;
-  const hideApply = searchParams?.applied === "true";
-  // Fetch goal data using API utility
-  let goal: any = null;
-  try {
-    goal = await fetchGoalById(id);
-    console.log("Fetched goal:", goal);
-  } catch (e) {
-    console.error("Error fetching goal:", e);
+export default function GoalDetailsPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const id = params.id as string;
+  const hideApply = searchParams.get("applied") === "true";
+
+  const [goal, setGoal] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetchGoalById(id)
+      .then(setGoal)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !goal) {
     return <div className="p-8 text-center text-red-500">Goal not found.</div>;
   }
 
-  // Add default values for missing properties
-  if (!goal) {
-    return <div className="p-8 text-center text-red-500">Goal not found.</div>;
-  }
-
-  // Calculate duration using transformer
-  let duration = "Not specified";
-  if (goal.startDate && goal.endDate) {
-    duration = getDurationDisplay(goal.startDate, goal.endDate);
-  }
+  const duration =
+    goal.startDate && goal.endDate
+      ? getDurationDisplay(goal.startDate, goal.endDate)
+      : "Not specified";
 
   const safeGoal = {
     title: goal.title || "Untitled Goal",
@@ -58,14 +68,14 @@ export default async function GoalDetailsPage(props: any) {
     status: goal.status || "Active Goal",
     duration,
     dailyEffort: goal.dailyEffort || "Not specified",
-    reminders: goal.reminders || "Not specified",
-    reward: goal.reward ?? 0,
-    rewardFrequency: goal.rewardFrequency || "",
+    reminders: goal.reminders || goal.checkInFrequency || "Not specified",
+    reward: goal.reward ?? goal.pledgeAmount ?? goal.rewardAmount ?? 0,
     categoryIcon: goal.categoryIcon || goal.category || "fitness",
+    meetingLink: goal.meetingLink || "",
+    meetingTime: goal.meetingTime || "",
   };
 
-  const categoryKey: keyof typeof iconMap =
-    (safeGoal.categoryIcon as keyof typeof iconMap) || "fitness";
+  const categoryKey = (safeGoal.categoryIcon as keyof typeof iconMap) || "fitness";
   const CategoryIcon = iconMap[categoryKey] || Dumbbell;
 
   return (
@@ -140,6 +150,44 @@ export default async function GoalDetailsPage(props: any) {
           </div>
         </section>
 
+        {/* Meeting Details */}
+        {(safeGoal.meetingLink || safeGoal.meetingTime) && (
+          <section className="mt-6">
+            <h3 className="text-lg font-semibold text-foreground">
+              Meeting Details
+            </h3>
+            <div className="mt-3 space-y-3 rounded-xl bg-card p-4">
+              {safeGoal.meetingLink && (
+                <div className="flex items-start gap-3">
+                  <Video className="mt-0.5 h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Meeting Link</p>
+                    <a
+                      href={safeGoal.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary hover:underline break-all"
+                    >
+                      {safeGoal.meetingLink}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {safeGoal.meetingTime && (
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Meeting Time</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {safeGoal.meetingTime}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="mt-6">
           <h3 className="text-lg font-semibold text-foreground">Trust Score</h3>
           <div className="mt-3 flex items-center justify-between rounded-xl bg-card p-4">
@@ -164,7 +212,7 @@ export default async function GoalDetailsPage(props: any) {
           </div>
         </section>
 
-        {!hideApply && (
+        {!hideApply && safeGoal.status?.toLowerCase() !== "applications-closed" && (
           <div className="mt-8 pb-8">
             <ApplyButton
               goalId={id}

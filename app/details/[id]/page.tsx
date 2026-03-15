@@ -7,21 +7,40 @@ import {
   X,
   MessageSquare,
   Loader2,
+  Calendar,
+  Bell,
+  Star,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { fetchApplicationById, updateApplicationStatus } from "@/lib/api";
-import { getRelativeTime, generateColorFromString } from "@/lib/transformers";
+import {
+  getRelativeTime,
+  generateColorFromString,
+  getDurationDisplay,
+} from "@/lib/transformers";
 
 interface ApplicationData {
   _id: string;
   goalId: {
     _id: string;
     title: string;
-    rewardAmount?: number;
+    description?: string;
+    motivation?: string;
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+    dailyEffort?: string;
+    checkInFrequency?: string;
+    hasPledge?: boolean;
     pledgeAmount?: number;
+    rewardAmount?: number;
+    meetingLink?: string;
+    meetingTime?: string;
+    status?: string;
   };
   assistantId:
     | string
@@ -180,7 +199,7 @@ export default function ApplicantDetailsPage() {
                 <Clock className="h-4 w-4" />
                 Applied {appliedTime}
               </span>
-              <span className="text-reward">${reward} Reward</span>
+              <span className="text-reward">{reward} Trust pts</span>
             </div>
           </div>
         </section>
@@ -194,6 +213,127 @@ export default function ApplicantDetailsPage() {
             {application.pitch || "No pitch provided."}
           </p>
         </section>
+
+        {/* Goal Details */}
+        <section className="mt-6">
+          <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            Goal Details
+          </h3>
+
+          {application.goalId.description && (
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {application.goalId.description}
+            </p>
+          )}
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="flex flex-col items-center rounded-xl bg-card p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                <Calendar className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Duration</span>
+              <span className="mt-1 text-center text-sm font-semibold text-foreground">
+                {application.goalId.startDate && application.goalId.endDate
+                  ? getDurationDisplay(
+                      application.goalId.startDate,
+                      application.goalId.endDate,
+                    )
+                  : "Not set"}
+              </span>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-card p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">
+                Daily Effort
+              </span>
+              <span className="mt-1 text-center text-sm font-semibold text-foreground">
+                {application.goalId.dailyEffort || "Not specified"}
+              </span>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-card p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                <Bell className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Check-ins</span>
+              <span className="mt-1 text-center text-sm font-semibold text-foreground">
+                {application.goalId.checkInFrequency || "Not set"}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Meeting Details */}
+        {(application.goalId.meetingLink || application.goalId.meetingTime) && (
+          <section className="mt-6">
+            <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Meeting Details
+            </h3>
+            <div className="mt-3 space-y-3 rounded-xl bg-card p-4">
+              {application.goalId.meetingLink && (
+                <div className="flex items-start gap-3">
+                  <Video className="mt-0.5 h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Meeting Link
+                    </p>
+                    <a
+                      href={application.goalId.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary hover:underline break-all"
+                    >
+                      {application.goalId.meetingLink}
+                    </a>
+                  </div>
+                </div>
+              )}
+              {application.goalId.meetingTime && (
+                <div className="flex items-start gap-3">
+                  <Clock className="mt-0.5 h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Meeting Time
+                    </p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {application.goalId.meetingTime}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Trust Score */}
+        {reward > 0 && (
+          <section className="mt-6">
+            <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+              Trust Score
+            </h3>
+            <div className="mt-3 flex items-center justify-between rounded-xl bg-card p-4">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Trust Points at Stake
+                </p>
+                <p className="mt-1 text-3xl font-bold text-foreground">
+                  {reward}
+                  <span className="text-lg font-normal text-muted-foreground">
+                    {" "}
+                    pts
+                  </span>
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Earned by assistant upon successful completion.
+                </p>
+              </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                <Star className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Status Badge */}
         {application.status !== "pending" && (

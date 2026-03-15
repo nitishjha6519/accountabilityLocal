@@ -26,6 +26,8 @@ interface GoalData {
   checkInFrequency: string;
   hasPledge: boolean;
   pledgeAmount: string;
+  meetingLink: string;
+  meetingTime: string;
 }
 
 export default function ReviewGoalPage() {
@@ -65,6 +67,8 @@ export default function ReviewGoalPage() {
         pledgeAmount: goalData.hasPledge
           ? Number.parseFloat(goalData.pledgeAmount)
           : 0,
+        meetingLink: goalData.meetingLink || undefined,
+        meetingTime: goalData.meetingTime || undefined,
         clientId: user.id,
         status: "posted",
       });
@@ -193,6 +197,36 @@ export default function ReviewGoalPage() {
         </section>
 
         {/* Trust Score */}
+        {/* Meeting Details */}
+        {(goalData.meetingLink || goalData.meetingTime) && (
+          <section className="mt-6">
+            <h3 className="font-semibold text-foreground">Meeting Details</h3>
+            <div className="mt-3 space-y-2 rounded-xl border border-border bg-card p-4">
+              {goalData.meetingLink && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Meeting Link</p>
+                  <a
+                    href={goalData.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 text-sm font-medium text-primary hover:underline break-all"
+                  >
+                    {goalData.meetingLink}
+                  </a>
+                </div>
+              )}
+              {goalData.meetingTime && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Meeting Time</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {goalData.meetingTime}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {goalData.hasPledge && (
           <section className="mt-6">
             <h3 className="font-semibold text-foreground">Trust Score</h3>

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { getUser } from "@/lib/auth";
 
 // Helper function to determine goal status
 function getGoalStatus(
@@ -43,7 +44,7 @@ interface AvailableGoal {
   category: "fitness" | "productivity" | "career";
   startDate?: string;
   endDate?: string;
-  status?: "accepted" | "pending" | "rejected";
+  status?: string;
 }
 
 interface GoalsTabAssistantProps {
@@ -52,16 +53,21 @@ interface GoalsTabAssistantProps {
   onFilterChange: (
     filter: "all" | "fitness" | "productivity" | "career",
   ) => void;
+  appliedGoalIds?: string[];
 }
 
 export function GoalsTabAssistant({
   goals,
   filter,
   onFilterChange,
+  appliedGoalIds = [],
 }: GoalsTabAssistantProps) {
   const router = useRouter();
+  const currentUserId = getUser()?.id;
   const filteredGoals = goals.filter(
-    (goal) => filter === "all" || goal.category === filter,
+    (goal) =>
+      goal.clientId !== currentUserId &&
+      (filter === "all" || goal.category === filter),
   );
   return (
     <>
@@ -206,9 +212,7 @@ export function GoalsTabAssistant({
                         </span>
                       )}
                       {goal.isNew && (
-                        <span className="text-muted-foreground">
-                          • New Client
-                        </span>
+                        <span className="text-muted-foreground">• New</span>
                       )}
                     </div>
                   </div>
@@ -264,6 +268,22 @@ export function GoalsTabAssistant({
                     <span className="flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1.5 text-sm font-medium text-amber-600">
                       <Clock className="h-4 w-4" />
                       Ongoing
+                    </span>
+                  );
+                }
+                if (goal.status?.toLowerCase() === "applications-closed") {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                      <XCircle className="h-4 w-4" />
+                      Applications Closed
+                    </span>
+                  );
+                }
+                if (appliedGoalIds.includes(goal.id)) {
+                  return (
+                    <span className="flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1.5 text-sm font-medium text-primary">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Applied
                     </span>
                   );
                 }

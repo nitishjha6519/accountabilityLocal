@@ -169,26 +169,38 @@ export interface AvailableGoal {
   description: string;
   tags: string[];
   category: "fitness" | "productivity" | "career";
+  status?: string;
 }
 
-export function transformToAvailableGoal(apiGoal: APIGoal): AvailableGoal {
-  // Generate initials from clientId (use first 2 letters)
-  const initials = apiGoal.clientId
-    .substring(0, 2)
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "");
+export function transformToAvailableGoal(apiGoal: any): AvailableGoal {
+  // Handle clientId as either a string or a populated object
+  const clientObj =
+    typeof apiGoal.clientId === "object" && apiGoal.clientId
+      ? apiGoal.clientId
+      : null;
+  const clientIdStr =
+    clientObj?._id ||
+    (typeof apiGoal.clientId === "string" ? apiGoal.clientId : "");
 
-  // Generate placeholder client name
-  const clientName = `Client ${apiGoal.clientId.substring(0, 4)}`;
+  const clientName = clientObj?.fullName || clientObj?.name || clientIdStr.substring(0, 6) || "User";
+  const clientInitials =
+    clientObj?.initials ||
+    clientName
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2) ||
+    "U";
 
   return {
     id: apiGoal._id,
-    clientId: apiGoal.clientId,
+    clientId: clientIdStr,
     title: apiGoal.title,
     clientName,
-    clientInitials: initials || "CL",
+    clientInitials,
     avatarColor: generateColorFromString(apiGoal._id),
-    verified: false, // Will default to false unless explicitly marked
+    verified: false,
     duration: getDurationDisplay(apiGoal.startDate, apiGoal.endDate),
     reward: apiGoal.rewardAmount || 0,
     rewardPeriod: apiGoal.rewardPeriod || "per week",
@@ -196,6 +208,7 @@ export function transformToAvailableGoal(apiGoal: APIGoal): AvailableGoal {
     tags: apiGoal.tags || [],
     category:
       (apiGoal.category as "fitness" | "productivity" | "career") || "fitness",
+    status: apiGoal.status,
   };
 }
 
@@ -218,16 +231,29 @@ export interface HomeGoal {
   categoryIcon: "fitness" | "career" | "language" | "business";
   startDate?: string;
   endDate?: string;
+  status?: string;
 }
 
-export function transformToHomeGoal(apiGoal: APIGoal): HomeGoal {
-  // Generate client name placeholder
-  const clientName = `Client ${apiGoal.clientId.substring(0, 4)}`;
-  const initials = clientName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+export function transformToHomeGoal(apiGoal: any): HomeGoal {
+  // Handle clientId as either a string or a populated object
+  const clientObj =
+    typeof apiGoal.clientId === "object" && apiGoal.clientId
+      ? apiGoal.clientId
+      : null;
+  const clientIdStr =
+    clientObj?._id ||
+    (typeof apiGoal.clientId === "string" ? apiGoal.clientId : "");
+
+  // Use actual name if populated, otherwise fall back gracefully
+  const clientName = clientObj?.fullName || clientObj?.name || clientIdStr.substring(0, 6) || "User";
+  const initials =
+    clientObj?.initials ||
+    clientName
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
 
   // Map category to icon
   const categoryIconMap: Record<
@@ -258,6 +284,7 @@ export function transformToHomeGoal(apiGoal: APIGoal): HomeGoal {
     categoryIcon,
     startDate: apiGoal.startDate,
     endDate: apiGoal.endDate,
+    status: apiGoal.status,
   };
 }
 
@@ -466,6 +493,7 @@ export interface Trial {
   startDate: string;
   endDate: string;
   frequency: "Daily" | "3x Weekly";
+  goalStatus?: string;
 }
 
 // Transform accepted applications to trials
@@ -550,6 +578,7 @@ export function transformToTrials(
       startDate,
       endDate,
       frequency,
+      goalStatus: (goal as any)?.status || "",
     };
   });
 }

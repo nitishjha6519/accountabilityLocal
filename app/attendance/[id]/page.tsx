@@ -457,7 +457,6 @@ export default function AttendancePage() {
           </span>
           <span className="text-muted-foreground">{"•"}</span>
           <span className="text-muted-foreground">
-            {trial.partnerRole === "assistant" ? "Assistant" : "Client"}:{" "}
             {trial.partnerName}
           </span>
         </div>

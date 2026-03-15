@@ -23,6 +23,7 @@ interface GoalCardProps {
   categoryIcon: "fitness" | "career" | "language" | "business";
   startDate?: string;
   endDate?: string;
+  status?: string;
 }
 
 const iconMap = {
@@ -60,9 +61,10 @@ export function GoalCard({
   categoryIcon,
   startDate,
   endDate,
+  status,
 }: GoalCardProps) {
   const CategoryIcon = iconMap[categoryIcon];
-  const status = getGoalStatus(startDate, endDate);
+  const goalStatus = getGoalStatus(startDate, endDate);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-card p-4 transition-shadow hover:shadow-lg hover:shadow-primary/5">
@@ -100,12 +102,17 @@ export function GoalCard({
             {category}
           </span>
         </div>
-        {status === "expired" ? (
+        {status?.toLowerCase() === "applications-closed" ? (
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+            <XCircle className="h-3.5 w-3.5" />
+            Applications Closed
+          </span>
+        ) : goalStatus === "expired" ? (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
             <XCircle className="h-3.5 w-3.5" />
             Expired
           </span>
-        ) : status === "ongoing" ? (
+        ) : goalStatus === "ongoing" ? (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/20 px-2 py-1 text-xs font-medium text-amber-600">
             <Clock className="h-3.5 w-3.5" />
             Ongoing

@@ -159,7 +159,7 @@ export function GoalsTabClient({ goals }: GoalsTabClientProps) {
                   <Calendar className="h-4 w-4" />
                   {goal.duration}
                 </span>
-                <span className="text-reward">${goal.reward} Reward</span>
+                <span className="text-reward">{goal.reward} Trust pts</span>
               </div>
               {(() => {
                 const status = getGoalStatus(goal.startDate, goal.endDate);

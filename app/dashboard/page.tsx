@@ -296,6 +296,7 @@ export default function DashboardPage() {
             goals={availableGoalsData?.length > 0 ? availableGoalsData : []}
             filter={discoverFilter}
             onFilterChange={setDiscoverFilter}
+            appliedGoalIds={submittedApplications.map((a) => a.goalId)}
           />
         )}
 

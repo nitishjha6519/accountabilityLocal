@@ -21,6 +21,8 @@ export default function PostGoalPage() {
   const [customCheckInFrequency, setCustomCheckInFrequency] = useState("");
   const [hasPledge, setHasPledge] = useState(true);
   const [pledgeAmount, setPledgeAmount] = useState("50.00");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [meetingTime, setMeetingTime] = useState("");
 
   const dailyEffortOptions = [
     "30 mins",
@@ -80,6 +82,8 @@ export default function PostGoalPage() {
       checkInFrequency: finalCheckInFrequency,
       hasPledge,
       pledgeAmount,
+      meetingLink,
+      meetingTime,
     };
     sessionStorage.setItem("pendingGoal", JSON.stringify(goalData));
     router.push("/post-goal/review");
@@ -339,6 +343,44 @@ export default function PostGoalPage() {
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </section>
+
+          {/* Meeting Details */}
+          <section>
+            <h2 className="text-xl font-bold text-foreground">
+              Meeting Details
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Optional: Add a meeting link and time for check-ins with your
+              partner.
+            </p>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="text-sm font-medium text-foreground">
+                  Meeting Link
+                </label>
+                <input
+                  type="url"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="e.g., https://meet.google.com/abc-defg-hij"
+                  className="mt-2 w-full rounded-xl bg-input px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-foreground">
+                  Meeting Time
+                </label>
+                <input
+                  type="time"
+                  value={meetingTime}
+                  onChange={(e) => setMeetingTime(e.target.value)}
+                  className="mt-2 w-full rounded-xl bg-input px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary [color-scheme:dark]"
+                />
               </div>
             </div>
           </section>
