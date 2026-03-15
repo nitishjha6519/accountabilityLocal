@@ -75,7 +75,8 @@ export default function GoalDetailsPage() {
     meetingTime: goal.meetingTime || "",
   };
 
-  const categoryKey = (safeGoal.categoryIcon as keyof typeof iconMap) || "fitness";
+  const categoryKey =
+    (safeGoal.categoryIcon as keyof typeof iconMap) || "fitness";
   const CategoryIcon = iconMap[categoryKey] || Dumbbell;
 
   return (
@@ -161,7 +162,9 @@ export default function GoalDetailsPage() {
                 <div className="flex items-start gap-3">
                   <Video className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Meeting Link</p>
+                    <p className="text-xs text-muted-foreground">
+                      Meeting Link
+                    </p>
                     <a
                       href={safeGoal.meetingLink}
                       target="_blank"
@@ -177,7 +180,9 @@ export default function GoalDetailsPage() {
                 <div className="flex items-start gap-3">
                   <Clock className="mt-0.5 h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Meeting Time</p>
+                    <p className="text-xs text-muted-foreground">
+                      Meeting Time
+                    </p>
                     <p className="text-sm font-semibold text-foreground">
                       {safeGoal.meetingTime}
                     </p>
@@ -212,16 +217,17 @@ export default function GoalDetailsPage() {
           </div>
         </section>
 
-        {!hideApply && safeGoal.status?.toLowerCase() !== "applications-closed" && (
-          <div className="mt-8 pb-8">
-            <ApplyButton
-              goalId={id}
-              clientId={goal.clientId}
-              startDate={goal.startDate}
-              endDate={goal.endDate}
-            />
-          </div>
-        )}
+        {!hideApply &&
+          safeGoal.status?.toLowerCase() !== "applications-closed" && (
+            <div className="mt-8 pb-8">
+              <ApplyButton
+                goalId={id}
+                clientId={goal.clientId}
+                startDate={goal.startDate}
+                endDate={goal.endDate}
+              />
+            </div>
+          )}
       </main>
     </div>
   );

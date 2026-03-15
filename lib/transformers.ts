@@ -182,7 +182,11 @@ export function transformToAvailableGoal(apiGoal: any): AvailableGoal {
     clientObj?._id ||
     (typeof apiGoal.clientId === "string" ? apiGoal.clientId : "");
 
-  const clientName = clientObj?.fullName || clientObj?.name || clientIdStr.substring(0, 6) || "User";
+  const clientName =
+    clientObj?.fullName ||
+    clientObj?.name ||
+    clientIdStr.substring(0, 6) ||
+    "User";
   const clientInitials =
     clientObj?.initials ||
     clientName
@@ -245,7 +249,11 @@ export function transformToHomeGoal(apiGoal: any): HomeGoal {
     (typeof apiGoal.clientId === "string" ? apiGoal.clientId : "");
 
   // Use actual name if populated, otherwise fall back gracefully
-  const clientName = clientObj?.fullName || clientObj?.name || clientIdStr.substring(0, 6) || "User";
+  const clientName =
+    clientObj?.fullName ||
+    clientObj?.name ||
+    clientIdStr.substring(0, 6) ||
+    "User";
   const initials =
     clientObj?.initials ||
     clientName

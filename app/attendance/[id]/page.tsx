@@ -456,9 +456,7 @@ export default function AttendancePage() {
             {trial.status}
           </span>
           <span className="text-muted-foreground">{"•"}</span>
-          <span className="text-muted-foreground">
-            {trial.partnerName}
-          </span>
+          <span className="text-muted-foreground">{trial.partnerName}</span>
         </div>
 
         {/* Date Range */}
