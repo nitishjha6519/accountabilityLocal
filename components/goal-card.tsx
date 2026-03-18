@@ -67,7 +67,7 @@ export function GoalCard({
   const goalStatus = getGoalStatus(startDate, endDate);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-card p-4 transition-shadow hover:shadow-lg hover:shadow-primary/5">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-card p-4 lg:p-5 transition-shadow hover:shadow-lg hover:shadow-primary/5">
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div
@@ -86,8 +86,8 @@ export function GoalCard({
         </span>
       </div>
 
-      <h3 className="mt-4 text-lg font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 line-clamp-2 flex-1 text-sm text-muted-foreground">
+      <h3 className="mt-4 text-base font-semibold text-foreground lg:text-lg">{title}</h3>
+      <p className="mt-1 line-clamp-3 flex-1 text-sm text-muted-foreground">
         {description}
       </p>
 

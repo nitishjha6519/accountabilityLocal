@@ -8,6 +8,7 @@ export function SearchBar() {
         type="text"
         placeholder="Try 'Fitness' or 'Coding'..."
         className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+        suppressHydrationWarning
       />
     </div>
   )

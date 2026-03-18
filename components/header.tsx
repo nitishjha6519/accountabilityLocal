@@ -30,6 +30,7 @@ export function Header() {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
+            suppressHydrationWarning
             className="h-9 w-9 text-muted-foreground hover:text-foreground"
           >
             {resolvedTheme === "dark" ? (
